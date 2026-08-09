@@ -1,8 +1,8 @@
 import { DEFAULT_CATEGORIES, DEFAULT_PORTFOLIO } from '../data/defaultPortfolio'
-import type { PortfolioFormData, PortfolioItem } from '../types/portfolio'
+import type { DeviceKind, PortfolioFormData, PortfolioImage, PortfolioItem } from '../types/portfolio'
 import { healPortfolioCopy, looksLikeFullMarkdown } from './portfolioText'
 
-const STORAGE_KEY = 'karsa_portfolio_v2'
+const STORAGE_KEY = 'karsa_portfolio_v3'
 const AUTH_KEY = 'karsa_admin_session'
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'karsa2026'
 
@@ -10,9 +10,32 @@ function uid() {
   return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
 }
 
-function normalizeImages(images: unknown): string[] | undefined {
+function normalizeDevice(value: unknown): DeviceKind {
+  if (value === 'desktop' || value === 'tablet' || value === 'phone' || value === 'all') {
+    return value
+  }
+  return 'all'
+}
+
+function normalizeImages(images: unknown): PortfolioImage[] | undefined {
   if (!Array.isArray(images)) return undefined
-  const cleaned = images.map((img) => String(img || '').trim()).filter(Boolean)
+  const cleaned = images
+    .map((img) => {
+      if (typeof img === 'string') {
+        const src = img.trim()
+        return src ? ({ src, device: 'all' } as PortfolioImage) : null
+      }
+      if (img && typeof img === 'object' && 'src' in img) {
+        const src = String((img as PortfolioImage).src || '').trim()
+        if (!src) return null
+        return {
+          src,
+          device: normalizeDevice((img as PortfolioImage).device),
+        } as PortfolioImage
+      }
+      return null
+    })
+    .filter((img): img is PortfolioImage => Boolean(img))
   return cleaned.length ? cleaned : undefined
 }
 
@@ -34,7 +57,10 @@ function normalizeItem(item: Partial<PortfolioItem>, index: number): PortfolioIt
 
 function readRaw(): PortfolioItem[] | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem('karsa_portfolio_v1')
+    const raw =
+      localStorage.getItem(STORAGE_KEY) ??
+      localStorage.getItem('karsa_portfolio_v2') ??
+      localStorage.getItem('karsa_portfolio_v1')
     if (!raw) return null
     const parsed = JSON.parse(raw) as PortfolioItem[]
     if (!Array.isArray(parsed)) return null
@@ -137,8 +163,19 @@ export function deletePortfolioItem(id: string) {
 
 export function resetPortfolioItems() {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('karsa_portfolio_v2')
   localStorage.removeItem('karsa_portfolio_v1')
   window.dispatchEvent(new Event('karsa-portfolio-updated'))
+}
+
+export function getImagesForDevice(
+  images: PortfolioImage[] | undefined,
+  device: Exclude<DeviceKind, 'all'>,
+): PortfolioImage[] {
+  if (!images?.length) return []
+  const exact = images.filter((img) => img.device === device)
+  if (exact.length) return exact
+  return images.filter((img) => img.device === 'all')
 }
 
 export function getCategories(): string[] {

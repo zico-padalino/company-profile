@@ -125,6 +125,14 @@
   transition: opacity 0.2s ease;
 }
 
+.detail-gallery-device {
+  inset: 0.5rem auto auto 0.5rem !important;
+  opacity: 1 !important;
+  color: #e8f1ff !important;
+  background: rgba(4, 12, 24, 0.72) !important;
+  border: 1px solid rgba(148, 197, 255, 0.25);
+}
+
 .detail-gallery-item:hover img {
   transform: scale(1.04);
 }

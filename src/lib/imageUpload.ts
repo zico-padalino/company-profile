@@ -1,3 +1,5 @@
+import type { DeviceKind } from '../types/portfolio'
+
 /** Resize image file ke data URL agar hemat localStorage */
 export function fileToCompressedDataUrl(
   file: File,
@@ -38,6 +40,15 @@ export function fileToCompressedDataUrl(
 
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif|svg)(\?.*)?$/i
 
+export const DEVICE_VIEWPORTS: Record<
+  Exclude<DeviceKind, 'all'>,
+  { width: number; height: number }
+> = {
+  desktop: { width: 1440, height: 900 },
+  tablet: { width: 820, height: 1180 },
+  phone: { width: 390, height: 844 },
+}
+
 export function isDirectImageUrl(url: string): boolean {
   const value = url.trim()
   if (!value) return false
@@ -50,17 +61,6 @@ export function isDirectImageUrl(url: string): boolean {
   }
 }
 
-/** Ambil screenshot dari link website (bukan file gambar) */
-export function websiteToPreviewImageUrl(siteUrl: string): string {
-  const params = new URLSearchParams({
-    url: siteUrl,
-    screenshot: 'true',
-    meta: 'false',
-    embed: 'screenshot.url',
-  })
-  return `https://api.microlink.io/?${params.toString()}`
-}
-
 function toAbsoluteUrl(input: string): string {
   if (input.startsWith('data:')) return input
   try {
@@ -70,12 +70,36 @@ function toAbsoluteUrl(input: string): string {
   }
 }
 
+/** Ambil screenshot dari link website, opsional per viewport device */
+export function websiteToPreviewImageUrl(
+  siteUrl: string,
+  device: DeviceKind = 'all',
+): string {
+  const params = new URLSearchParams({
+    url: toAbsoluteUrl(siteUrl),
+    screenshot: 'true',
+    meta: 'false',
+    embed: 'screenshot.url',
+  })
+
+  if (device !== 'all') {
+    const vp = DEVICE_VIEWPORTS[device]
+    params.set('viewport.width', String(vp.width))
+    params.set('viewport.height', String(vp.height))
+  }
+
+  return `https://api.microlink.io/?${params.toString()}`
+}
+
 /**
  * Resolve input menjadi URL gambar:
  * - file gambar langsung dipakai
- * - link website diambil screenshot-nya
+ * - link website diambil screenshot-nya (bisa per device)
  */
-export async function resolveImageSource(input: string): Promise<string> {
+export async function resolveImageSource(
+  input: string,
+  device: DeviceKind = 'all',
+): Promise<string> {
   const value = input.trim()
   if (!value) throw new Error('URL kosong')
 
@@ -87,6 +111,5 @@ export async function resolveImageSource(input: string): Promise<string> {
     return toAbsoluteUrl(value)
   }
 
-  // Path lokal / website → screenshot otomatis (pakai absolute URL)
-  return websiteToPreviewImageUrl(toAbsoluteUrl(value))
+  return websiteToPreviewImageUrl(value, device)
 }

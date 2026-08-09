@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
-import type { PortfolioItem } from '../types/portfolio'
+import type { PortfolioImage, PortfolioItem } from '../types/portfolio'
+import { DEVICE_LABELS } from '../types/portfolio'
 import './PortfolioDetailModal.css'
 
 function isExternalLink(url: string) {
   return url.startsWith('http') || url.startsWith('/')
+}
+
+function imageKey(img: PortfolioImage, index: number) {
+  return `${img.device}-${img.src.slice(0, 32)}-${index}`
 }
 
 export function PortfolioDetailModal({
@@ -18,17 +23,18 @@ export function PortfolioDetailModal({
 
   useEffect(() => {
     if (!item) return
+    const images = item.images ?? []
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (lightboxIndex !== null) setLightboxIndex(null)
         else onClose()
       }
-      if (lightboxIndex === null || !item.images?.length) return
+      if (lightboxIndex === null || !images.length) return
       if (e.key === 'ArrowRight') {
-        setLightboxIndex((i) => ((i ?? 0) + 1) % item.images!.length)
+        setLightboxIndex((i) => ((i ?? 0) + 1) % images.length)
       }
       if (e.key === 'ArrowLeft') {
-        setLightboxIndex((i) => ((i ?? 0) - 1 + item.images!.length) % item.images!.length)
+        setLightboxIndex((i) => ((i ?? 0) - 1 + images.length) % images.length)
       }
     }
     document.body.style.overflow = 'hidden'
@@ -46,7 +52,8 @@ export function PortfolioDetailModal({
   if (!item) return null
 
   const detail = item.detail?.trim() || item.desc
-  const images = item.images?.filter(Boolean) ?? []
+  const images = item.images ?? []
+  const active = lightboxIndex !== null ? images[lightboxIndex] : null
 
   return (
     <div className="detail-overlay" onClick={onClose} role="presentation">
@@ -73,14 +80,15 @@ export function PortfolioDetailModal({
             <section className="detail-gallery">
               <h3>Galeri Project</h3>
               <div className="detail-gallery-grid">
-                {images.map((src, index) => (
+                {images.map((img, index) => (
                   <button
-                    key={`${src.slice(0, 32)}-${index}`}
+                    key={imageKey(img, index)}
                     type="button"
                     className="detail-gallery-item"
                     onClick={() => setLightboxIndex(index)}
                   >
-                    <img src={src} alt={`${item.name} ${index + 1}`} loading="lazy" />
+                    <img src={img.src} alt={`${item.name} ${DEVICE_LABELS[img.device]}`} loading="lazy" />
+                    <span className="detail-gallery-device">{DEVICE_LABELS[img.device]}</span>
                     <span>Lihat</span>
                   </button>
                 ))}
@@ -107,7 +115,7 @@ export function PortfolioDetailModal({
         </footer>
       </div>
 
-      {lightboxIndex !== null && images[lightboxIndex] ? (
+      {active ? (
         <div
           className="detail-lightbox"
           onClick={() => setLightboxIndex(null)}
@@ -148,12 +156,12 @@ export function PortfolioDetailModal({
             </>
           ) : null}
           <img
-            src={images[lightboxIndex]}
-            alt={`${item.name} full ${lightboxIndex + 1}`}
+            src={active.src}
+            alt={`${item.name} ${DEVICE_LABELS[active.device]}`}
             onClick={(e) => e.stopPropagation()}
           />
           <p className="detail-lightbox-caption">
-            {lightboxIndex + 1} / {images.length}
+            {DEVICE_LABELS[active.device]} · {(lightboxIndex ?? 0) + 1} / {images.length}
           </p>
         </div>
       ) : null}

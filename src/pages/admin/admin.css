@@ -313,6 +313,20 @@
   cursor: pointer;
 }
 
+.admin-image-device {
+  position: absolute;
+  left: 0.4rem;
+  top: 0.4rem;
+  border: 1px solid rgba(148, 197, 255, 0.35);
+  border-radius: 8px;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(4, 12, 24, 0.85);
+  color: #e8f1ff;
+  max-width: calc(100% - 0.8rem);
+}
+
 .admin-empty-images {
   border: 1px dashed rgba(148, 197, 255, 0.22);
   border-radius: 12px;

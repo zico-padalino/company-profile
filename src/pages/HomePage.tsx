@@ -263,6 +263,7 @@ export default function HomePage() {
                     tone={p.tone}
                     demo={p.demo}
                     preview={p.preview}
+                    images={p.images}
                   />
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
