@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
 import type { PortfolioItem } from '../types/portfolio'
 import './PortfolioDetailModal.css'
@@ -14,10 +14,22 @@ export function PortfolioDetailModal({
   item: PortfolioItem | null
   onClose: () => void
 }) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
+
   useEffect(() => {
     if (!item) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        if (lightboxIndex !== null) setLightboxIndex(null)
+        else onClose()
+      }
+      if (lightboxIndex === null || !item.images?.length) return
+      if (e.key === 'ArrowRight') {
+        setLightboxIndex((i) => ((i ?? 0) + 1) % item.images!.length)
+      }
+      if (e.key === 'ArrowLeft') {
+        setLightboxIndex((i) => ((i ?? 0) - 1 + item.images!.length) % item.images!.length)
+      }
     }
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
@@ -25,11 +37,16 @@ export function PortfolioDetailModal({
       document.body.style.overflow = ''
       window.removeEventListener('keydown', onKey)
     }
-  }, [item, onClose])
+  }, [item, onClose, lightboxIndex])
+
+  useEffect(() => {
+    setLightboxIndex(null)
+  }, [item?.id])
 
   if (!item) return null
 
   const detail = item.detail?.trim() || item.desc
+  const images = item.images?.filter(Boolean) ?? []
 
   return (
     <div className="detail-overlay" onClick={onClose} role="presentation">
@@ -52,6 +69,25 @@ export function PortfolioDetailModal({
         </header>
 
         <div className="detail-body">
+          {images.length > 0 ? (
+            <section className="detail-gallery">
+              <h3>Galeri Project</h3>
+              <div className="detail-gallery-grid">
+                {images.map((src, index) => (
+                  <button
+                    key={`${src.slice(0, 32)}-${index}`}
+                    type="button"
+                    className="detail-gallery-item"
+                    onClick={() => setLightboxIndex(index)}
+                  >
+                    <img src={src} alt={`${item.name} ${index + 1}`} loading="lazy" />
+                    <span>Lihat</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
           <div className="detail-markdown">
             <Markdown>{detail}</Markdown>
           </div>
@@ -70,6 +106,57 @@ export function PortfolioDetailModal({
           </a>
         </footer>
       </div>
+
+      {lightboxIndex !== null && images[lightboxIndex] ? (
+        <div
+          className="detail-lightbox"
+          onClick={() => setLightboxIndex(null)}
+          role="presentation"
+        >
+          <button
+            type="button"
+            className="detail-lightbox-close"
+            onClick={() => setLightboxIndex(null)}
+            aria-label="Tutup gambar"
+          >
+            ×
+          </button>
+          {images.length > 1 ? (
+            <>
+              <button
+                type="button"
+                className="detail-lightbox-nav prev"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIndex((i) => ((i ?? 0) - 1 + images.length) % images.length)
+                }}
+                aria-label="Gambar sebelumnya"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                className="detail-lightbox-nav next"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIndex((i) => ((i ?? 0) + 1) % images.length)
+                }}
+                aria-label="Gambar berikutnya"
+              >
+                ›
+              </button>
+            </>
+          ) : null}
+          <img
+            src={images[lightboxIndex]}
+            alt={`${item.name} full ${lightboxIndex + 1}`}
+            onClick={(e) => e.stopPropagation()}
+          />
+          <p className="detail-lightbox-caption">
+            {lightboxIndex + 1} / {images.length}
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }

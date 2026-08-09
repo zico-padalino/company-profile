@@ -711,6 +711,17 @@
   margin: 0;
 }
 
+.project-image-count {
+  align-self: flex-start;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(56, 189, 248, 0.1);
+  color: #7dd3fc;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
 .project-actions {
   display: flex;
   gap: 0.55rem;

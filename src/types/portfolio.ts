@@ -8,6 +8,8 @@ export type PortfolioItem = {
   desc: string
   /** Deskripsi lengkap (markdown) untuk modal detail */
   detail?: string
+  /** Galeri gambar detail (URL atau data URL) */
+  images?: string[]
   demo: string
   preview?: string
   published: boolean

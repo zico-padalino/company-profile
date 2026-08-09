@@ -10,6 +10,12 @@ function uid() {
   return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
 }
 
+function normalizeImages(images: unknown): string[] | undefined {
+  if (!Array.isArray(images)) return undefined
+  const cleaned = images.map((img) => String(img || '').trim()).filter(Boolean)
+  return cleaned.length ? cleaned : undefined
+}
+
 function normalizeItem(item: Partial<PortfolioItem>, index: number): PortfolioItem {
   return {
     id: item.id || uid(),
@@ -18,6 +24,7 @@ function normalizeItem(item: Partial<PortfolioItem>, index: number): PortfolioIt
     tone: item.tone === 'warm' || item.tone === 'green' ? item.tone : 'default',
     desc: String(item.desc || ''),
     detail: item.detail ? String(item.detail) : undefined,
+    images: normalizeImages(item.images),
     demo: String(item.demo || '#'),
     preview: item.preview ? String(item.preview) : undefined,
     published: Boolean(item.published),
@@ -47,6 +54,7 @@ function withDefaultDetails(items: PortfolioItem[]): PortfolioItem[] {
       detail: healed.detail?.trim()
         ? healed.detail
         : fallback?.detail || item.detail,
+      images: item.images?.length ? item.images : fallback?.images,
       desc: healed.desc || fallback?.desc || item.desc,
       name: healed.name || item.name,
     }
@@ -94,6 +102,7 @@ export function upsertPortfolioItem(data: PortfolioFormData): PortfolioItem {
             tone: data.tone,
             desc: data.desc.trim(),
             detail: data.detail?.trim() || undefined,
+            images: normalizeImages(data.images),
             demo: data.demo.trim(),
             preview: data.preview?.trim() || undefined,
             published: data.published,
@@ -112,6 +121,7 @@ export function upsertPortfolioItem(data: PortfolioFormData): PortfolioItem {
     tone: data.tone,
     desc: data.desc.trim(),
     detail: data.detail?.trim() || undefined,
+    images: normalizeImages(data.images),
     demo: data.demo.trim(),
     preview: data.preview?.trim() || undefined,
     published: data.published,

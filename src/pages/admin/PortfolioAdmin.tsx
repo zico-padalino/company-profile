@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { usePortfolio } from '../../hooks/usePortfolio'
+import { fileToCompressedDataUrl } from '../../lib/imageUpload'
 import {
   deletePortfolioItem,
   exportPortfolioJson,
@@ -17,6 +18,7 @@ const EMPTY_FORM: PortfolioFormData = {
   tone: 'default',
   desc: '',
   detail: '',
+  images: [],
   demo: '',
   preview: '',
   published: true,
@@ -28,9 +30,13 @@ export default function PortfolioAdmin() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [query, setQuery] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const categories = useMemo(() => getCategories(), [items])
+  const formImages = form.images ?? []
 
   const publishedCount = items.filter((i) => i.published).length
   const draftCount = items.length - publishedCount
@@ -54,6 +60,7 @@ export default function PortfolioAdmin() {
   function startCreate() {
     setEditingId(null)
     setForm(EMPTY_FORM)
+    setImageUrl('')
   }
 
   function startEdit(item: PortfolioItem) {
@@ -65,12 +72,44 @@ export default function PortfolioAdmin() {
       tone: item.tone,
       desc: item.desc,
       detail: item.detail || '',
+      images: item.images || [],
       demo: item.demo,
       preview: item.preview || '',
       published: item.published,
       sortOrder: item.sortOrder,
     })
+    setImageUrl('')
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function addImage(src: string) {
+    const next = src.trim()
+    if (!next) return
+    setForm((f) => ({ ...f, images: [...(f.images || []), next] }))
+  }
+
+  function removeImage(index: number) {
+    setForm((f) => ({
+      ...f,
+      images: (f.images || []).filter((_, i) => i !== index),
+    }))
+  }
+
+  async function handleImageFiles(files: FileList | null) {
+    if (!files?.length) return
+    setUploading(true)
+    try {
+      const uploaded: string[] = []
+      for (const file of Array.from(files)) {
+        uploaded.push(await fileToCompressedDataUrl(file))
+      }
+      setForm((f) => ({ ...f, images: [...(f.images || []), ...uploaded] }))
+      showMessage(`${uploaded.length} gambar ditambahkan.`)
+    } catch {
+      showMessage('Gagal upload gambar. Pastikan file berupa image.')
+    } finally {
+      setUploading(false)
+    }
   }
 
   function handleSubmit(e: FormEvent) {
@@ -226,6 +265,74 @@ export default function PortfolioAdmin() {
                 />
                 <em>Ditampilkan saat pengunjung klik tombol “Detail” di portfolio.</em>
               </label>
+            </div>
+
+            <div className="admin-form-section">
+              <h3>Galeri Gambar Detail</h3>
+              <em className="admin-section-hint">
+                Gambar ini muncul di modal Detail. Bisa upload file atau tempel URL.
+              </em>
+
+              <div className="admin-image-actions">
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-soft"
+                  disabled={uploading}
+                  onClick={() => imageInputRef.current?.click()}
+                >
+                  {uploading ? 'Mengupload...' : 'Upload Gambar'}
+                </button>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  hidden
+                  onChange={(e) => {
+                    void handleImageFiles(e.target.files)
+                    e.target.value = ''
+                  }}
+                />
+              </div>
+
+              <div className="admin-row-2">
+                <label className="admin-field">
+                  <span>Atau tempel URL gambar</span>
+                  <input
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://.../screenshot.png"
+                  />
+                </label>
+                <div className="admin-field" style={{ justifyContent: 'end' }}>
+                  <span>&nbsp;</span>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-soft"
+                    onClick={() => {
+                      addImage(imageUrl)
+                      setImageUrl('')
+                    }}
+                  >
+                    Tambah URL
+                  </button>
+                </div>
+              </div>
+
+              {formImages.length > 0 ? (
+                <div className="admin-image-grid">
+                  {formImages.map((src, index) => (
+                    <div key={`${index}-${src.slice(0, 24)}`} className="admin-image-card">
+                      <img src={src} alt={`Preview ${index + 1}`} />
+                      <button type="button" onClick={() => removeImage(index)}>
+                        Hapus
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="admin-empty-images">Belum ada gambar detail.</div>
+              )}
             </div>
 
             <div className="admin-form-section">

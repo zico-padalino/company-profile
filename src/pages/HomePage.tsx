@@ -268,6 +268,15 @@ export default function HomePage() {
                     <span className="project-cat">{p.category}</span>
                     <h3>{p.name}</h3>
                     <p className="project-desc">{getCardSummary(p.desc, p.detail)}</p>
+                    {p.images && p.images.length > 0 ? (
+                      <button
+                        type="button"
+                        className="project-image-count"
+                        onClick={() => setSelected(p)}
+                      >
+                        {p.images.length} gambar detail
+                      </button>
+                    ) : null}
                     <div className="project-actions">
                       <button
                         type="button"
