@@ -346,13 +346,13 @@ function App() {
                 <div className="cta-actions">
                   <a
                     className="btn btn-primary"
-                    href="https://wa.me/6281234567890?text=Halo%20KARSA%20DIGITAL%2C%20saya%20ingin%20konsultasi%20website"
+                    href="https://wa.me/6285161852230?text=Halo%20KARSA%20DIGITAL%2C%20saya%20ingin%20konsultasi%20website"
                     target="_blank"
                     rel="noreferrer"
                   >
                     Chat WhatsApp
                   </a>
-                  <a className="btn btn-ghost" href="mailto:hello@karsadigital.id">
+                  <a className="btn btn-ghost" href="mailto:padalinozico@gmail.com">
                     Kirim Email
                   </a>
                 </div>
@@ -368,15 +368,15 @@ function App() {
                 </div>
                 <div className="contact-row">
                   <span>Email</span>
-                  <strong>hello@karsadigital.id</strong>
+                  <strong>padalinozico@gmail.com</strong>
                 </div>
                 <div className="contact-row">
                   <span>WhatsApp</span>
-                  <strong>+62 812-3456-7890</strong>
+                  <strong>0851-6185-2230</strong>
                 </div>
                 <div className="contact-row">
                   <span>Lokasi</span>
-                  <strong>Indonesia</strong>
+                  <strong>Serang, Banten, Indonesia</strong>
                 </div>
               </div>
             </div>
