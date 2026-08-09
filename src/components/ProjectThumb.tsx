@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
 import { getImagesForDevice } from '../lib/portfolioStore'
 import type { DeviceKind, PortfolioImage } from '../types/portfolio'
-import { DeviceViewModal } from './DeviceViewModal'
 
-type ViewDevice = Exclude<DeviceKind, 'all'>
+export type ViewDevice = Exclude<DeviceKind, 'all'>
 
 function LiveDeviceScreen({
   url,
@@ -83,93 +82,82 @@ export function ProjectThumb({
   demo,
   preview,
   images,
+  onOpenDevice,
 }: {
   name: string
   tone: string
   demo: string
   preview?: string
   images?: PortfolioImage[]
+  onOpenDevice: (device: ViewDevice) => void
 }) {
   const liveUrl =
     preview || (demo.startsWith('http') || demo.startsWith('/') ? demo : '')
   const label = name.split(' ')[0]
-  const [activeDevice, setActiveDevice] = useState<ViewDevice | null>(null)
 
   const desktopImage = getImagesForDevice(images, 'desktop')[0]?.src
   const tabletImage = getImagesForDevice(images, 'tablet')[0]?.src
   const phoneImage = getImagesForDevice(images, 'phone')[0]?.src
 
   return (
-    <>
-      <div className="project-thumb project-thumb--devices" data-tone={tone}>
-        <div className="device-stage">
-          <button
-            type="button"
-            className="device device-desktop device-hit"
-            onClick={() => setActiveDevice('desktop')}
-            aria-label="Lihat mockup desktop"
-          >
-            <div className="device-chrome">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div className="device-bezel">
-              <LiveDeviceScreen
-                url={liveUrl}
-                imageSrc={desktopImage}
-                label={label}
-                device="desktop"
-              />
-            </div>
-            <div className="device-stand" />
-            <div className="device-base" />
-          </button>
+    <div className="project-thumb project-thumb--devices" data-tone={tone}>
+      <div className="device-stage">
+        <button
+          type="button"
+          className="device device-desktop device-hit"
+          onClick={() => onOpenDevice('desktop')}
+          aria-label="Lihat mockup desktop"
+        >
+          <div className="device-chrome">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="device-bezel">
+            <LiveDeviceScreen
+              url={liveUrl}
+              imageSrc={desktopImage}
+              label={label}
+              device="desktop"
+            />
+          </div>
+          <div className="device-stand" />
+          <div className="device-base" />
+        </button>
 
-          <button
-            type="button"
-            className="device device-tablet device-hit"
-            onClick={() => setActiveDevice('tablet')}
-            aria-label="Lihat mockup tablet"
-          >
-            <div className="device-bezel">
-              <LiveDeviceScreen
-                url={liveUrl}
-                imageSrc={tabletImage}
-                label={label}
-                device="tablet"
-              />
-            </div>
-          </button>
+        <button
+          type="button"
+          className="device device-tablet device-hit"
+          onClick={() => onOpenDevice('tablet')}
+          aria-label="Lihat mockup tablet"
+        >
+          <div className="device-bezel">
+            <LiveDeviceScreen
+              url={liveUrl}
+              imageSrc={tabletImage}
+              label={label}
+              device="tablet"
+            />
+          </div>
+        </button>
 
-          <button
-            type="button"
-            className="device device-phone device-hit"
-            onClick={() => setActiveDevice('phone')}
-            aria-label="Lihat mockup HP"
-          >
-            <div className="device-bezel phone-bezel">
-              <div className="phone-notch" />
-              <LiveDeviceScreen
-                url={liveUrl}
-                imageSrc={phoneImage}
-                label={label}
-                device="phone"
-              />
-            </div>
-          </button>
-        </div>
+        <button
+          type="button"
+          className="device device-phone device-hit"
+          onClick={() => onOpenDevice('phone')}
+          aria-label="Lihat mockup HP"
+        >
+          <div className="device-bezel phone-bezel">
+            <div className="phone-notch" />
+            <LiveDeviceScreen
+              url={liveUrl}
+              imageSrc={phoneImage}
+              label={label}
+              device="phone"
+            />
+          </div>
+        </button>
       </div>
-
-      <DeviceViewModal
-        open={Boolean(activeDevice)}
-        device={activeDevice || 'desktop'}
-        title={name}
-        liveUrl={liveUrl}
-        images={images}
-        onClose={() => setActiveDevice(null)}
-        onChangeDevice={setActiveDevice}
-      />
-    </>
+    </div>
   )
 }

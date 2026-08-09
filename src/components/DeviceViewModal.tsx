@@ -2,11 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
 import { getImagesForDevice } from '../lib/portfolioStore'
-import type { DeviceKind, PortfolioImage } from '../types/portfolio'
+import type { PortfolioImage } from '../types/portfolio'
 import { DEVICE_LABELS } from '../types/portfolio'
+import type { ViewDevice } from './ProjectThumb'
 import './DeviceViewModal.css'
-
-type ViewDevice = Exclude<DeviceKind, 'all'>
 
 function DeviceShell({
   device,
@@ -41,7 +40,7 @@ function DeviceShell({
   }, [imageSrc, device, viewport.width, viewport.height])
 
   const screen = (
-    <div className="device-shell-screen" ref={screenRef}>
+    <div className={`device-shell-screen device-shell-screen--${device}`} ref={screenRef}>
       {imageSrc ? (
         <img src={imageSrc} alt={`${title} ${DEVICE_LABELS[device]}`} />
       ) : liveUrl ? (
@@ -71,8 +70,6 @@ function DeviceShell({
           </div>
           {screen}
         </div>
-        <div className="device-shell-neck" />
-        <div className="device-shell-base" />
       </div>
     )
   }
@@ -155,13 +152,15 @@ export function DeviceViewModal({
           </button>
         </header>
 
-        <div className="device-view-tabs">
+        <div className="device-view-tabs" role="tablist" aria-label="Pilih device">
           {(['desktop', 'tablet', 'phone'] as ViewDevice[]).map((d) => {
             const hasImage = getImagesForDevice(images, d).length > 0
             return (
               <button
                 key={d}
                 type="button"
+                role="tab"
+                aria-selected={d === device}
                 className={d === device ? 'active' : ''}
                 onClick={() => onChangeDevice(d)}
               >
@@ -173,10 +172,22 @@ export function DeviceViewModal({
         </div>
 
         <div className={`device-view-stage device-view-stage--${device}`}>
-          <DeviceShell device={device} title={title} imageSrc={imageSrc} liveUrl={liveUrl} />
+          <DeviceShell
+            key={device}
+            device={device}
+            title={title}
+            imageSrc={imageSrc}
+            liveUrl={liveUrl}
+          />
         </div>
 
-        <p className="device-view-hint">Klik di luar atau tekan Esc untuk menutup.</p>
+        <p className="device-view-hint">
+          {imageSrc
+            ? `Gambar ${DEVICE_LABELS[device]} ditampilkan penuh agar jelas.`
+            : liveUrl
+              ? `Preview live dalam bentuk ${DEVICE_LABELS[device].toLowerCase()}.`
+              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin portfolio.`}
+        </p>
       </div>
     </div>,
     document.body,

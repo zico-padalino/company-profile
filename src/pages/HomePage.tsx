@@ -1,11 +1,17 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { DeviceViewModal } from '../components/DeviceViewModal'
 import { PortfolioDetailModal } from '../components/PortfolioDetailModal'
-import { ProjectThumb } from '../components/ProjectThumb'
+import { ProjectThumb, type ViewDevice } from '../components/ProjectThumb'
 import { usePortfolio } from '../hooks/usePortfolio'
 import { getCardSummary } from '../lib/portfolioText'
 import type { PortfolioItem } from '../types/portfolio'
 import '../App.css'
+
+type DevicePreview = {
+  item: PortfolioItem
+  device: ViewDevice
+}
 
 const services = [
   {
@@ -86,6 +92,7 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState('Semua')
   const [selected, setSelected] = useState<PortfolioItem | null>(null)
+  const [devicePreview, setDevicePreview] = useState<DevicePreview | null>(null)
 
   const filters = useMemo(() => {
     const cats = [...new Set(projects.map((p) => p.category))]
@@ -264,6 +271,7 @@ export default function HomePage() {
                     demo={p.demo}
                     preview={p.preview}
                     images={p.images}
+                    onOpenDevice={(device) => setDevicePreview({ item: p, device })}
                   />
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
@@ -304,6 +312,25 @@ export default function HomePage() {
         </section>
 
         <PortfolioDetailModal item={selected} onClose={() => setSelected(null)} />
+
+        <DeviceViewModal
+          open={Boolean(devicePreview)}
+          device={devicePreview?.device || 'desktop'}
+          title={devicePreview?.item.name || ''}
+          liveUrl={
+            devicePreview?.item.preview ||
+            (devicePreview &&
+            (devicePreview.item.demo.startsWith('http') ||
+              devicePreview.item.demo.startsWith('/'))
+              ? devicePreview.item.demo
+              : undefined)
+          }
+          images={devicePreview?.item.images}
+          onClose={() => setDevicePreview(null)}
+          onChangeDevice={(device) =>
+            setDevicePreview((prev) => (prev ? { ...prev, device } : prev))
+          }
+        />
 
         <section className="section" id="proses">
           <div className="container">
