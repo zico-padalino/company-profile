@@ -1,9 +1,78 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
 import { DEVICE_LABELS } from '../types/portfolio'
 import type { ViewDevice } from './ProjectThumb'
 import './DeviceViewModal.css'
+
+type Box = { screenW: number; screenH: number; scale: number }
+
+const MAX_SCREEN: Record<ViewDevice, number> = {
+  desktop: 520,
+  tablet: 240,
+  phone: 200,
+}
+
+const CHROME: Record<ViewDevice, { x: number; y: number }> = {
+  desktop: { x: 16, y: 36 }, // padding + traffic lights
+  tablet: { x: 20, y: 36 }, // bezel + home bar
+  phone: { x: 16, y: 16 },
+}
+
+function useFitScale(device: ViewDevice, liveUrl?: string) {
+  const shellRef = useRef<HTMLDivElement>(null)
+  const viewport = DEVICE_VIEWPORTS[device]
+  const [box, setBox] = useState<Box>({
+    screenW: 280,
+    screenH: 175,
+    scale: 280 / viewport.width,
+  })
+
+  useLayoutEffect(() => {
+    const shell = shellRef.current
+    if (!shell) return
+
+    const update = () => {
+      const stage = shell.parentElement
+      if (!stage) return
+
+      const availW = Math.max(stage.clientWidth - 20, 120)
+      const availH = Math.max(stage.clientHeight - 20, 120)
+      const chrome = CHROME[device]
+      const aspect = viewport.width / viewport.height
+
+      // Ruang untuk layar (setelah chrome device)
+      let screenW = Math.min(availW - chrome.x, MAX_SCREEN[device])
+      let screenH = screenW / aspect
+
+      if (screenH + chrome.y > availH) {
+        screenH = Math.max(availH - chrome.y, 100)
+        screenW = screenH * aspect
+      }
+
+      setBox({
+        screenW,
+        screenH,
+        scale: screenW / viewport.width,
+      })
+    }
+
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(shell.parentElement || shell)
+    window.addEventListener('resize', update)
+    const t1 = window.setTimeout(update, 30)
+    const t2 = window.setTimeout(update, 120)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', update)
+      window.clearTimeout(t1)
+      window.clearTimeout(t2)
+    }
+  }, [device, viewport.width, viewport.height, liveUrl])
+
+  return { shellRef, box, viewport }
+}
 
 function DeviceShell({
   device,
@@ -14,34 +83,13 @@ function DeviceShell({
   title: string
   liveUrl?: string
 }) {
-  const screenRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.3)
-  const viewport = DEVICE_VIEWPORTS[device]
-
-  useEffect(() => {
-    const el = screenRef.current
-    if (!el) return
-
-    const updateScale = () => {
-      const { width, height } = el.getBoundingClientRect()
-      if (width < 2 || height < 2) return
-      // Cover: isi penuh layar device (tanpa area hitam kosong)
-      setScale(Math.max(width / viewport.width, height / viewport.height))
-    }
-
-    updateScale()
-    const observer = new ResizeObserver(updateScale)
-    observer.observe(el)
-    // Delay sekali setelah paint modal
-    const t = window.setTimeout(updateScale, 50)
-    return () => {
-      observer.disconnect()
-      window.clearTimeout(t)
-    }
-  }, [device, viewport.width, liveUrl])
+  const { shellRef, box, viewport } = useFitScale(device, liveUrl)
 
   const screen = (
-    <div className={`device-shell-screen device-shell-screen--${device}`} ref={screenRef}>
+    <div
+      className="device-shell-screen"
+      style={{ width: box.screenW, height: box.screenH }}
+    >
       {liveUrl ? (
         <iframe
           key={`${device}-${liveUrl}`}
@@ -50,7 +98,8 @@ function DeviceShell({
           style={{
             width: viewport.width,
             height: viewport.height,
-            transform: `scale(${scale})`,
+            transform: `scale(${box.scale})`,
+            transformOrigin: 'top left',
           }}
         />
       ) : (
@@ -63,8 +112,8 @@ function DeviceShell({
 
   if (device === 'desktop') {
     return (
-      <div className="device-shell device-shell--desktop">
-        <div className="device-shell-monitor">
+      <div className="device-shell device-shell--desktop" ref={shellRef}>
+        <div className="device-shell-monitor" style={{ width: box.screenW + 16 }}>
           <div className="device-shell-chrome">
             <span />
             <span />
@@ -78,8 +127,11 @@ function DeviceShell({
 
   if (device === 'tablet') {
     return (
-      <div className="device-shell device-shell--tablet">
-        <div className="device-shell-body">
+      <div className="device-shell device-shell--tablet" ref={shellRef}>
+        <div
+          className="device-shell-body"
+          style={{ width: box.screenW + 20, height: box.screenH + 36 }}
+        >
           {screen}
           <div className="device-shell-home" aria-hidden />
         </div>
@@ -88,8 +140,11 @@ function DeviceShell({
   }
 
   return (
-    <div className="device-shell device-shell--phone">
-      <div className="device-shell-body">
+    <div className="device-shell device-shell--phone" ref={shellRef}>
+      <div
+        className="device-shell-body"
+        style={{ width: box.screenW + 16, height: box.screenH + 16 }}
+      >
         <div className="device-shell-notch" aria-hidden />
         {screen}
       </div>
@@ -112,16 +167,16 @@ export function DeviceViewModal({
   onClose: () => void
   onChangeDevice: (device: ViewDevice) => void
 }) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
-    const prevOverflow = document.body.style.overflow
+    const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = prevOverflow
+      document.body.style.overflow = prev
       window.removeEventListener('keydown', onKey)
     }
   }, [open, onClose])
@@ -168,11 +223,7 @@ export function DeviceViewModal({
           <DeviceShell key={device} device={device} title={title} liveUrl={liveUrl} />
         </div>
 
-        <p className="device-view-hint">
-          {liveUrl
-            ? 'Preview live · klik di luar atau Esc untuk menutup'
-            : 'Isi Link Demo / Preview di admin untuk menampilkan mockup live.'}
-        </p>
+        <p className="device-view-hint">Klik di luar atau Esc untuk menutup</p>
       </div>
     </div>,
     document.body,
