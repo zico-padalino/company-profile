@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
-import { getImagesForDevice } from '../lib/portfolioStore'
+import { getExactImagesForDevice } from '../lib/portfolioStore'
 import type { DeviceKind, PortfolioImage } from '../types/portfolio'
 
 export type ViewDevice = Exclude<DeviceKind, 'all'>
@@ -21,20 +21,23 @@ function LiveDeviceScreen({
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
+    if (imageSrc) return
     const el = frameRef.current
     if (!el) return
 
     const updateScale = () => {
       const { width, height } = el.getBoundingClientRect()
       if (width < 2 || height < 2) return
-      setScale(Math.min(width / viewport.width, height / viewport.height))
+      const fitW = width / viewport.width
+      const fitH = height / viewport.height
+      setScale(device === 'desktop' ? Math.min(fitW, fitH) : Math.max(fitW, fitH))
     }
 
     updateScale()
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [viewport.width, viewport.height])
+  }, [imageSrc, viewport.width, viewport.height])
 
   if (imageSrc) {
     return (
@@ -95,9 +98,10 @@ export function ProjectThumb({
     preview || (demo.startsWith('http') || demo.startsWith('/') ? demo : '')
   const label = name.split(' ')[0]
 
-  const desktopImage = getImagesForDevice(images, 'desktop')[0]?.src
-  const tabletImage = getImagesForDevice(images, 'tablet')[0]?.src
-  const phoneImage = getImagesForDevice(images, 'phone')[0]?.src
+  // Hanya gambar exact device — jangan pakai screenshot desktop di frame HP
+  const desktopImage = getExactImagesForDevice(images, 'desktop')[0]?.src
+  const tabletImage = getExactImagesForDevice(images, 'tablet')[0]?.src
+  const phoneImage = getExactImagesForDevice(images, 'phone')[0]?.src
 
   return (
     <div className="project-thumb project-thumb--devices" data-tone={tone}>

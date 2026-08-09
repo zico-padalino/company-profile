@@ -178,6 +178,15 @@ export function getImagesForDevice(
   return images.filter((img) => img.device === 'all')
 }
 
+/** Hanya gambar yang memang ditandai untuk device ini (tanpa fallback "all") */
+export function getExactImagesForDevice(
+  images: PortfolioImage[] | undefined,
+  device: Exclude<DeviceKind, 'all'>,
+): PortfolioImage[] {
+  if (!images?.length) return []
+  return images.filter((img) => img.device === device)
+}
+
 export function getCategories(): string[] {
   const fromItems = getPortfolioItems(true).map((i) => i.category)
   return [...new Set([...DEFAULT_CATEGORIES, ...fromItems])].filter(Boolean)

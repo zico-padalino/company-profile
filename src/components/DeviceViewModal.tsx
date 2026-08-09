@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
-import { getImagesForDevice } from '../lib/portfolioStore'
+import { getExactImagesForDevice } from '../lib/portfolioStore'
 import type { PortfolioImage } from '../types/portfolio'
 import { DEVICE_LABELS } from '../types/portfolio'
 import type { ViewDevice } from './ProjectThumb'
@@ -19,7 +19,7 @@ function DeviceShell({
   liveUrl?: string
 }) {
   const screenRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.4)
+  const [scale, setScale] = useState(0.35)
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
@@ -30,7 +30,11 @@ function DeviceShell({
     const updateScale = () => {
       const { width, height } = el.getBoundingClientRect()
       if (width < 2 || height < 2) return
-      setScale(Math.min(width / viewport.width, height / viewport.height))
+      const fitW = width / viewport.width
+      const fitH = height / viewport.height
+      // Phone/tablet: cover agar layout mobile mengisi layar (tanpa celah)
+      // Desktop: contain agar UI penuh terlihat
+      setScale(device === 'desktop' ? Math.min(fitW, fitH) : Math.max(fitW, fitH))
     }
 
     updateScale()
@@ -45,6 +49,7 @@ function DeviceShell({
         <img src={imageSrc} alt={`${title} ${DEVICE_LABELS[device]}`} />
       ) : liveUrl ? (
         <iframe
+          key={`${device}-${liveUrl}`}
           src={liveUrl}
           title={`${title} ${device}`}
           style={{
@@ -112,8 +117,11 @@ export function DeviceViewModal({
   onClose: () => void
   onChangeDevice: (device: ViewDevice) => void
 }) {
-  const deviceImages = getImagesForDevice(images, device)
-  const imageSrc = deviceImages[0]?.src
+  // Hanya pakai gambar yang benar-benar untuk device ini.
+  // Kalau belum ada, pakai live preview (iframe viewport HP/tablet) agar layout responsif.
+  const exactImage = getExactImagesForDevice(images, device)[0]?.src
+  const imageSrc = exactImage
+  const showLive = !imageSrc && Boolean(liveUrl)
 
   useEffect(() => {
     if (!open) return
@@ -154,7 +162,7 @@ export function DeviceViewModal({
 
         <div className="device-view-tabs" role="tablist" aria-label="Pilih device">
           {(['desktop', 'tablet', 'phone'] as ViewDevice[]).map((d) => {
-            const hasImage = getImagesForDevice(images, d).length > 0
+            const hasExact = getExactImagesForDevice(images, d).length > 0
             return (
               <button
                 key={d}
@@ -165,7 +173,7 @@ export function DeviceViewModal({
                 onClick={() => onChangeDevice(d)}
               >
                 {DEVICE_LABELS[d]}
-                {hasImage ? <em className="device-tab-dot" aria-hidden /> : null}
+                {hasExact ? <em className="device-tab-dot" aria-hidden /> : null}
               </button>
             )
           })}
@@ -183,10 +191,10 @@ export function DeviceViewModal({
 
         <p className="device-view-hint">
           {imageSrc
-            ? `Gambar ${DEVICE_LABELS[device]} ditampilkan penuh agar jelas.`
-            : liveUrl
-              ? `Preview live dalam bentuk ${DEVICE_LABELS[device].toLowerCase()}.`
-              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin portfolio.`}
+            ? `Gambar khusus ${DEVICE_LABELS[device]}.`
+            : showLive
+              ? `Preview live responsif (${DEVICE_VIEWPORTS[device].width}px) untuk ${DEVICE_LABELS[device]}.`
+              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin, atau isi link demo.`}
         </p>
       </div>
     </div>,
