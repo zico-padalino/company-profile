@@ -1,9 +1,9 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const DEVICE_VIEWPORTS = {
-  desktop: { width: 1280, height: 800 },
-  tablet: { width: 768, height: 1024 },
+  desktop: { width: 1440, height: 900 },
+  tablet: { width: 820, height: 1180 },
   phone: { width: 390, height: 844 },
 } as const
 
@@ -16,10 +16,28 @@ function LiveDeviceScreen({
   label: string
   device: keyof typeof DEVICE_VIEWPORTS
 }) {
-  const [failed, setFailed] = useState(false)
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.2)
   const viewport = DEVICE_VIEWPORTS[device]
 
-  if (failed || !url) {
+  useEffect(() => {
+    const el = frameRef.current
+    if (!el) return
+
+    const updateScale = () => {
+      const { width, height } = el.getBoundingClientRect()
+      if (width < 2 || height < 2) return
+      const next = Math.min(width / viewport.width, height / viewport.height)
+      setScale(next)
+    }
+
+    updateScale()
+    const observer = new ResizeObserver(updateScale)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [viewport.width, viewport.height])
+
+  if (!url) {
     return (
       <div className="device-screen-fallback">
         <strong>{label}</strong>
@@ -35,21 +53,17 @@ function LiveDeviceScreen({
   }
 
   return (
-    <div
-      className={`live-screen live-screen--${device}`}
-      style={
-        {
-          '--vw': viewport.width,
-          '--vh': viewport.height,
-        } as CSSProperties
-      }
-    >
+    <div className={`live-screen live-screen--${device}`} ref={frameRef}>
       <iframe
         src={url}
         title={`${label} ${device} preview`}
-        loading="eager"
+        loading="lazy"
         tabIndex={-1}
-        onError={() => setFailed(true)}
+        style={{
+          width: viewport.width,
+          height: viewport.height,
+          transform: `scale(${scale})`,
+        }}
       />
     </div>
   )
@@ -73,6 +87,11 @@ function ProjectThumb({
     <div className="project-thumb project-thumb--devices" data-tone={tone}>
       <div className="device-stage" aria-hidden="true">
         <div className="device device-desktop">
+          <div className="device-chrome">
+            <span />
+            <span />
+            <span />
+          </div>
           <div className="device-bezel">
             <LiveDeviceScreen url={liveUrl} label={label} device="desktop" />
           </div>
@@ -164,8 +183,8 @@ const projects = [
     category: 'Retail',
     tone: 'green',
     desc: 'Sistem kasir & katalog petshop untuk UMKM — login, transaksi, dan kelola produk.',
-    demo: 'https://pet-shop-karsadigital.netlify.app/#/dashboard?demo=1',
-    preview: 'https://pet-shop-karsadigital.netlify.app/#/dashboard?demo=1',
+    demo: 'https://pet-shop-karsadigital.netlify.app/?demo=1#/dashboard',
+    preview: 'https://pet-shop-karsadigital.netlify.app/?demo=1#/dashboard',
   },
   {
     name: 'Warung Rasa Nusantara',
