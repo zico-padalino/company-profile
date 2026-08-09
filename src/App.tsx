@@ -1,218 +1,56 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import './App.css'
 
-function autoPreviewUrl(demo: string) {
-  // Preview otomatis dari URL live — tidak perlu screenshot manual
-  const params = new URLSearchParams({
-    url: demo,
-    screenshot: 'true',
-    meta: 'false',
-    embed: 'screenshot.url',
-  })
-  return `https://api.microlink.io/?${params.toString()}`
-}
+const DEVICE_VIEWPORTS = {
+  desktop: { width: 1280, height: 800 },
+  tablet: { width: 768, height: 1024 },
+  phone: { width: 390, height: 844 },
+} as const
 
-const PETSHOP_MENUS = [
-  { title: 'Jual Barang', desc: 'Catat penjualan di kasir', tone: 'teal' },
-  { title: 'Uang Kasir', desc: 'Setor, tarik & saldo laci', tone: 'green' },
-  { title: 'Absensi', desc: 'Barcode + selfie + GPS', tone: 'blue' },
-  { title: 'Titip Hewan', desc: 'Pet hotel & penitipan', tone: 'orange' },
-  { title: 'Lihat Kamar', desc: 'Kamar hotel tersedia', tone: 'orange' },
-  { title: 'Riwayat Jual', desc: 'Lihat semua penjualan', tone: 'yellow' },
-  { title: 'Stok Barang', desc: 'Daftar produk toko', tone: 'blue' },
-  { title: 'Stok Opname', desc: 'Admin & Owner cek hasil', tone: 'blue' },
-  { title: 'Laporan Uang', desc: 'Rekap penjualan toko', tone: 'teal' },
-  { title: 'Kategori', desc: 'Kelompok produk', tone: 'yellow' },
-  { title: 'Pengguna', desc: 'Akun karyawan toko', tone: 'green' },
-  { title: 'Toko & Struk', desc: 'Nama, logo, teks struk', tone: 'teal' },
-] as const
-
-function PetshopTopbar({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className={`ps-topbar ${compact ? 'is-compact' : ''}`}>
-      <span className="ps-burger" />
-      {!compact ? (
-        <div className="ps-brandline">
-          <strong>PetShop</strong>
-          <small>Toko & penitipan hewan</small>
-        </div>
-      ) : (
-        <span className="ps-role">Administrator</span>
-      )}
-      <div className="ps-user">
-        {!compact ? <span className="ps-role">Administrator</span> : null}
-        <span className="ps-avatar">A</span>
-        {!compact ? (
-          <div className="ps-user-text">
-            <b>Admin PetShop</b>
-            <small>Logout</small>
-          </div>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
-function PetshopHero() {
-  return (
-    <div className="ps-hero">
-      <div>
-        <p>Selamat pagi, Admin</p>
-        <strong>PetShop</strong>
-        <small>Toko & penitipan hewan</small>
-      </div>
-      <div className="ps-paws" aria-hidden="true">
-        <span />
-        <span />
-      </div>
-    </div>
-  )
-}
-
-function PetshopMenuGrid({ count, columns }: { count: number; columns: number }) {
-  return (
-    <div className="ps-menu-grid" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
-      {PETSHOP_MENUS.slice(0, count).map((item) => (
-        <div key={item.title} className={`ps-menu-card tone-${item.tone}`}>
-          <i />
-          <b>{item.title}</b>
-          <small>{item.desc}</small>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function PetshopDashboardScreen({ device }: { device: 'desktop' | 'tablet' | 'phone' }) {
-  if (device === 'desktop') {
-    return (
-      <div className="ps-app ps-desktop">
-        <aside className="ps-sidebar">
-          <div className="ps-side-brand">
-            <span className="ps-logo" />
-            <b>PetShop Dzikra</b>
-          </div>
-          <p className="ps-side-label">Utama</p>
-          <span className="ps-side-link active">Beranda</span>
-          <p className="ps-side-label">Toko</p>
-          <span className="ps-side-link">Jual Barang</span>
-          <span className="ps-side-link">Uang Kasir</span>
-          <span className="ps-side-link">Absensi</span>
-          <span className="ps-side-link">Riwayat Jual</span>
-          <span className="ps-side-link">Titip Hewan</span>
-          <p className="ps-side-label">Barang & Laporan</p>
-          <span className="ps-side-link">Stok Barang</span>
-          <span className="ps-side-link">Stok Opname</span>
-          <span className="ps-side-link">Laporan Uang</span>
-          <p className="ps-side-label">Pengaturan</p>
-          <span className="ps-side-link">Pengguna</span>
-          <span className="ps-side-link">Toko & Struk</span>
-        </aside>
-        <div className="ps-main">
-          <PetshopTopbar />
-          <div className="ps-content">
-            <PetshopHero />
-            <p className="ps-section-title">Mau ngapain hari ini?</p>
-            <PetshopMenuGrid count={10} columns={5} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (device === 'tablet') {
-    return (
-      <div className="ps-app ps-tablet">
-        <PetshopTopbar />
-        <div className="ps-content">
-          <PetshopHero />
-          <p className="ps-section-title">Mau ngapain hari ini?</p>
-          <PetshopMenuGrid count={8} columns={4} />
-          <p className="ps-section-title">Ringkasan hari ini</p>
-          <div className="ps-summary">
-            <div>
-              <b>5</b>
-              <small>Penjualan</small>
-            </div>
-            <div>
-              <b>637rb</b>
-              <small>Uang masuk</small>
-            </div>
-            <div>
-              <b>3</b>
-              <small>Hewan titip</small>
-            </div>
-            <div>
-              <b>4</b>
-              <small>Reservasi</small>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="ps-app ps-phone">
-      <PetshopTopbar compact />
-      <div className="ps-content">
-        <PetshopHero />
-        <p className="ps-section-title">Mau ngapain hari ini?</p>
-        <PetshopMenuGrid count={6} columns={2} />
-      </div>
-      <nav className="ps-bottomnav">
-        <span className="active">Beranda</span>
-        <span>Jual</span>
-        <span>Titip</span>
-        <span>Riwayat</span>
-        <span>Stok</span>
-      </nav>
-    </div>
-  )
-}
-
-function DeviceScreen({
+function LiveDeviceScreen({
+  url,
   label,
-  imageSrc,
-  failed,
-  onImageError,
-  screen,
   device,
 }: {
+  url: string
   label: string
-  imageSrc: string
-  failed: boolean
-  onImageError: () => void
-  screen?: 'dashboard'
-  device: 'desktop' | 'tablet' | 'phone'
+  device: keyof typeof DEVICE_VIEWPORTS
 }) {
-  if (screen === 'dashboard') {
-    return <PetshopDashboardScreen device={device} />
-  }
+  const [failed, setFailed] = useState(false)
+  const viewport = DEVICE_VIEWPORTS[device]
 
-  if (imageSrc && !failed) {
+  if (failed || !url) {
     return (
-      <img
-        src={imageSrc}
-        alt=""
-        loading="lazy"
-        referrerPolicy="no-referrer"
-        className="device-screen-img"
-        onError={onImageError}
-      />
+      <div className="device-screen-fallback">
+        <strong>{label}</strong>
+        <div className="device-bar" />
+        <div className="device-bar short" />
+        <div className="device-cards">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
     )
   }
 
   return (
-    <div className="device-screen-fallback">
-      <strong>{label}</strong>
-      <div className="device-bar" />
-      <div className="device-bar short" />
-      <div className="device-cards">
-        <span />
-        <span />
-        <span />
-      </div>
+    <div
+      className={`live-screen live-screen--${device}`}
+      style={
+        {
+          '--vw': viewport.width,
+          '--vh': viewport.height,
+        } as CSSProperties
+      }
+    >
+      <iframe
+        src={url}
+        title={`${label} ${device} preview`}
+        loading="eager"
+        tabIndex={-1}
+        onError={() => setFailed(true)}
+      />
     </div>
   )
 }
@@ -221,33 +59,22 @@ function ProjectThumb({
   name,
   tone,
   demo,
-  screen,
+  preview,
 }: {
   name: string
   tone: string
   demo: string
-  screen?: 'dashboard'
+  preview?: string
 }) {
-  const isLive = demo.startsWith('http')
-  const imageSrc = isLive && !screen ? autoPreviewUrl(demo) : ''
-  const [failed, setFailed] = useState(false)
+  const liveUrl = preview || (demo.startsWith('http') ? demo : '')
   const label = name.split(' ')[0]
-
-  const handleImageError = () => setFailed(true)
 
   return (
     <div className="project-thumb project-thumb--devices" data-tone={tone}>
       <div className="device-stage" aria-hidden="true">
         <div className="device device-desktop">
           <div className="device-bezel">
-            <DeviceScreen
-              label={label}
-              imageSrc={imageSrc}
-              failed={failed}
-              onImageError={handleImageError}
-              screen={screen}
-              device="desktop"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="desktop" />
           </div>
           <div className="device-stand" />
           <div className="device-base" />
@@ -255,28 +82,14 @@ function ProjectThumb({
 
         <div className="device device-tablet">
           <div className="device-bezel">
-            <DeviceScreen
-              label={label}
-              imageSrc={imageSrc}
-              failed={failed}
-              onImageError={handleImageError}
-              screen={screen}
-              device="tablet"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="tablet" />
           </div>
         </div>
 
         <div className="device device-phone">
           <div className="device-bezel phone-bezel">
             <div className="phone-notch" />
-            <DeviceScreen
-              label={label}
-              imageSrc={imageSrc}
-              failed={failed}
-              onImageError={handleImageError}
-              screen={screen}
-              device="phone"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="phone" />
           </div>
         </div>
       </div>
@@ -351,8 +164,8 @@ const projects = [
     category: 'Retail',
     tone: 'green',
     desc: 'Sistem kasir & katalog petshop untuk UMKM — login, transaksi, dan kelola produk.',
-    demo: 'https://pet-shop-karsadigital.netlify.app/#/login',
-    screen: 'dashboard' as const,
+    demo: 'https://pet-shop-karsadigital.netlify.app/#/dashboard?demo=1',
+    preview: 'https://pet-shop-karsadigital.netlify.app/#/dashboard?demo=1',
   },
   {
     name: 'Warung Rasa Nusantara',
@@ -584,7 +397,7 @@ function App() {
                     name={p.name}
                     tone={p.tone}
                     demo={p.demo}
-                    screen={'screen' in p ? p.screen : undefined}
+                    preview={'preview' in p ? p.preview : undefined}
                   />
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
