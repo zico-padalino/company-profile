@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { PortfolioDetailModal } from '../components/PortfolioDetailModal'
 import { ProjectThumb } from '../components/ProjectThumb'
 import { usePortfolio } from '../hooks/usePortfolio'
+import type { PortfolioItem } from '../types/portfolio'
 import '../App.css'
 
 const services = [
@@ -82,6 +84,7 @@ export default function HomePage() {
   const projects = usePortfolio(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeFilter, setActiveFilter] = useState('Semua')
+  const [selected, setSelected] = useState<PortfolioItem | null>(null)
 
   const filters = useMemo(() => {
     const cats = [...new Set(projects.map((p) => p.category))]
@@ -265,6 +268,13 @@ export default function HomePage() {
                     <h3>{p.name}</h3>
                     <p>{p.desc}</p>
                     <div className="project-actions">
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        onClick={() => setSelected(p)}
+                      >
+                        Detail
+                      </button>
                       <a
                         href={p.demo}
                         className="btn btn-primary"
@@ -274,9 +284,6 @@ export default function HomePage() {
                       >
                         Lihat Demo
                       </a>
-                      <a href="#kontak" className="btn btn-ghost">
-                        Order Mirip Ini
-                      </a>
                     </div>
                   </div>
                 </article>
@@ -284,6 +291,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <PortfolioDetailModal item={selected} onClose={() => setSelected(null)} />
 
         <section className="section" id="proses">
           <div className="container">

@@ -6,6 +6,8 @@ export type PortfolioItem = {
   category: string
   tone: PortfolioTone
   desc: string
+  /** Deskripsi lengkap (markdown) untuk modal detail */
+  detail?: string
   demo: string
   preview?: string
   published: boolean

@@ -16,6 +16,7 @@ const EMPTY_FORM: PortfolioFormData = {
   category: 'Retail',
   tone: 'default',
   desc: '',
+  detail: '',
   demo: '',
   preview: '',
   published: true,
@@ -63,6 +64,7 @@ export default function PortfolioAdmin() {
       category: item.category,
       tone: item.tone,
       desc: item.desc,
+      detail: item.detail || '',
       demo: item.demo,
       preview: item.preview || '',
       published: item.published,
@@ -199,14 +201,25 @@ export default function PortfolioAdmin() {
               </div>
 
               <label className="admin-field">
-                <span>Deskripsi</span>
+                <span>Deskripsi Singkat (card)</span>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={form.desc}
                   onChange={(e) => setForm((f) => ({ ...f, desc: e.target.value }))}
                   placeholder="Ringkasan singkat project untuk card portfolio"
                   required
                 />
+              </label>
+
+              <label className="admin-field">
+                <span>Deskripsi Lengkap (modal Detail)</span>
+                <textarea
+                  rows={10}
+                  value={form.detail || ''}
+                  onChange={(e) => setForm((f) => ({ ...f, detail: e.target.value }))}
+                  placeholder="Bisa pakai Markdown: ## Judul, - list, **tebal**"
+                />
+                <em>Ditampilkan saat pengunjung klik tombol “Detail” di portfolio.</em>
               </label>
             </div>
 

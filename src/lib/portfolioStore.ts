@@ -1,7 +1,7 @@
 import { DEFAULT_CATEGORIES, DEFAULT_PORTFOLIO } from '../data/defaultPortfolio'
 import type { PortfolioFormData, PortfolioItem } from '../types/portfolio'
 
-const STORAGE_KEY = 'karsa_portfolio_v1'
+const STORAGE_KEY = 'karsa_portfolio_v2'
 const AUTH_KEY = 'karsa_admin_session'
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'karsa2026'
 
@@ -9,20 +9,55 @@ function uid() {
   return `p_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
 }
 
+function normalizeItem(item: Partial<PortfolioItem>, index: number): PortfolioItem {
+  return {
+    id: item.id || uid(),
+    name: String(item.name || 'Untitled'),
+    category: String(item.category || 'Lainnya'),
+    tone: item.tone === 'warm' || item.tone === 'green' ? item.tone : 'default',
+    desc: String(item.desc || ''),
+    detail: item.detail ? String(item.detail) : undefined,
+    demo: String(item.demo || '#'),
+    preview: item.preview ? String(item.preview) : undefined,
+    published: Boolean(item.published),
+    sortOrder: Number(item.sortOrder) || index + 1,
+  }
+}
+
 function readRaw(): PortfolioItem[] | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem('karsa_portfolio_v1')
     if (!raw) return null
     const parsed = JSON.parse(raw) as PortfolioItem[]
     if (!Array.isArray(parsed)) return null
-    return parsed
+    return parsed.map((item, index) => normalizeItem(item, index))
   } catch {
     return null
   }
 }
 
+function withDefaultDetails(items: PortfolioItem[]): PortfolioItem[] {
+  return items.map((item) => {
+    const fallback = DEFAULT_PORTFOLIO.find((d) => d.id === item.id)
+    if (!fallback) return item
+    return {
+      ...item,
+      detail: item.detail?.trim() ? item.detail : fallback.detail,
+      // Sinkronkan deskripsi PetShop lama ke versi terbaru jika belum punya detail
+      desc:
+        item.id === 'petshop-epos' && !item.detail?.trim()
+          ? fallback.desc
+          : item.desc,
+      name:
+        item.id === 'petshop-epos' && item.name.includes('PetShop')
+          ? fallback.name
+          : item.name,
+    }
+  })
+}
+
 export function getPortfolioItems(includeDraft = false): PortfolioItem[] {
-  const items = readRaw() ?? DEFAULT_PORTFOLIO
+  const items = withDefaultDetails(readRaw() ?? DEFAULT_PORTFOLIO)
   const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder)
   return includeDraft ? sorted : sorted.filter((i) => i.published)
 }
@@ -43,6 +78,7 @@ export function upsertPortfolioItem(data: PortfolioFormData): PortfolioItem {
             category: data.category.trim(),
             tone: data.tone,
             desc: data.desc.trim(),
+            detail: data.detail?.trim() || undefined,
             demo: data.demo.trim(),
             preview: data.preview?.trim() || undefined,
             published: data.published,
@@ -60,6 +96,7 @@ export function upsertPortfolioItem(data: PortfolioFormData): PortfolioItem {
     category: data.category.trim(),
     tone: data.tone,
     desc: data.desc.trim(),
+    detail: data.detail?.trim() || undefined,
     demo: data.demo.trim(),
     preview: data.preview?.trim() || undefined,
     published: data.published,
@@ -75,6 +112,7 @@ export function deletePortfolioItem(id: string) {
 
 export function resetPortfolioItems() {
   localStorage.removeItem(STORAGE_KEY)
+  localStorage.removeItem('karsa_portfolio_v1')
   window.dispatchEvent(new Event('karsa-portfolio-updated'))
 }
 
@@ -104,17 +142,7 @@ export function exportPortfolioJson(): string {
 export function importPortfolioJson(json: string): number {
   const parsed = JSON.parse(json) as PortfolioItem[]
   if (!Array.isArray(parsed)) throw new Error('Format JSON tidak valid')
-  const normalized = parsed.map((item, index) => ({
-    id: item.id || uid(),
-    name: String(item.name || 'Untitled'),
-    category: String(item.category || 'Lainnya'),
-    tone: (item.tone === 'warm' || item.tone === 'green' ? item.tone : 'default') as PortfolioItem['tone'],
-    desc: String(item.desc || ''),
-    demo: String(item.demo || '#'),
-    preview: item.preview ? String(item.preview) : undefined,
-    published: Boolean(item.published),
-    sortOrder: Number(item.sortOrder) || index + 1,
-  }))
+  const normalized = parsed.map((item, index) => normalizeItem(item, index))
   savePortfolioItems(normalized)
   return normalized.length
 }
