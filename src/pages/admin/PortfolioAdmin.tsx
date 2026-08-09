@@ -1,6 +1,10 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { usePortfolio } from '../../hooks/usePortfolio'
-import { fileToCompressedDataUrl } from '../../lib/imageUpload'
+import {
+  fileToCompressedDataUrl,
+  isDirectImageUrl,
+  resolveImageSource,
+} from '../../lib/imageUpload'
 import {
   deletePortfolioItem,
   exportPortfolioJson,
@@ -110,6 +114,38 @@ export default function PortfolioAdmin() {
     } finally {
       setUploading(false)
     }
+  }
+
+  async function handleAddFromLink(rawUrl?: string) {
+    const source = (rawUrl ?? imageUrl).trim()
+    if (!source) {
+      showMessage('Isi link website atau URL gambar dulu.')
+      return
+    }
+    setUploading(true)
+    try {
+      const resolved = await resolveImageSource(source)
+      addImage(resolved)
+      setImageUrl('')
+      showMessage(
+        isDirectImageUrl(source)
+          ? 'URL gambar ditambahkan.'
+          : 'Screenshot dari website ditambahkan.',
+      )
+    } catch {
+      showMessage('Gagal mengambil gambar dari link.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleCaptureFromDemo() {
+    const source = (form.preview || form.demo || '').trim()
+    if (!source || source.startsWith('#')) {
+      showMessage('Isi Link Demo / Preview dulu untuk ambil gambar website.')
+      return
+    }
+    await handleAddFromLink(source)
   }
 
   function handleSubmit(e: FormEvent) {
@@ -270,7 +306,8 @@ export default function PortfolioAdmin() {
             <div className="admin-form-section">
               <h3>Galeri Gambar Detail</h3>
               <em className="admin-section-hint">
-                Gambar ini muncul di modal Detail. Bisa upload file atau tempel URL.
+                Bisa dari: (1) upload file gambar, (2) URL file gambar, atau (3) link website
+                (otomatis ambil screenshot).
               </em>
 
               <div className="admin-image-actions">
@@ -280,7 +317,15 @@ export default function PortfolioAdmin() {
                   disabled={uploading}
                   onClick={() => imageInputRef.current?.click()}
                 >
-                  {uploading ? 'Mengupload...' : 'Upload Gambar'}
+                  {uploading ? 'Memproses...' : '1. Upload Gambar'}
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-soft"
+                  disabled={uploading}
+                  onClick={() => void handleCaptureFromDemo()}
+                >
+                  Ambil dari Link Demo
                 </button>
                 <input
                   ref={imageInputRef}
@@ -297,24 +342,25 @@ export default function PortfolioAdmin() {
 
               <div className="admin-row-2">
                 <label className="admin-field">
-                  <span>Atau tempel URL gambar</span>
+                  <span>2. Link website / URL gambar</span>
                   <input
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://.../screenshot.png"
+                    placeholder="https://pet-shop-karsadigital.netlify.app/ atau https://.../foto.png"
                   />
+                  <em>
+                    Website → ambil screenshot otomatis. File gambar (.png/.jpg) → dipakai langsung.
+                  </em>
                 </label>
                 <div className="admin-field" style={{ justifyContent: 'end' }}>
                   <span>&nbsp;</span>
                   <button
                     type="button"
-                    className="admin-btn admin-btn-soft"
-                    onClick={() => {
-                      addImage(imageUrl)
-                      setImageUrl('')
-                    }}
+                    className="admin-btn admin-btn-primary"
+                    disabled={uploading}
+                    onClick={() => void handleAddFromLink()}
                   >
-                    Tambah URL
+                    Tambahkan
                   </button>
                 </div>
               </div>
