@@ -64,6 +64,13 @@ const services = [
 
 const projects = [
   {
+    name: 'PetShop - E-POS',
+    category: 'Retail',
+    tone: 'green',
+    desc: 'Sistem kasir & katalog petshop untuk UMKM — login, transaksi, dan kelola produk.',
+    demo: 'https://pet-shop-karsadigital.netlify.app/#/login',
+  },
+  {
     name: 'Warung Rasa Nusantara',
     category: 'Kuliner',
     tone: 'warm',
@@ -107,7 +114,7 @@ const projects = [
   },
 ]
 
-const filters = ['Semua', 'Kuliner', 'Fashion', 'Jasa'] as const
+const filters = ['Semua', 'Retail', 'Kuliner', 'Fashion', 'Jasa'] as const
 
 const steps = [
   { num: '01', title: 'Konsultasi', desc: 'Diskusi kebutuhan, target pelanggan, dan gaya brand bisnis Anda.' },
@@ -297,7 +304,13 @@ function App() {
                     <h3>{p.name}</h3>
                     <p>{p.desc}</p>
                     <div className="project-actions">
-                      <a href={p.demo} className="btn btn-primary">
+                      <a
+                        href={p.demo}
+                        className="btn btn-primary"
+                        {...(p.demo.startsWith('http')
+                          ? { target: '_blank', rel: 'noreferrer' }
+                          : {})}
+                      >
                         Lihat Demo
                       </a>
                       <a href="#kontak" className="btn btn-ghost">
