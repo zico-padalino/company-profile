@@ -12,17 +12,75 @@ function autoPreviewUrl(demo: string) {
   return `https://api.microlink.io/?${params.toString()}`
 }
 
+function PetshopDashboardScreen() {
+  return (
+    <div className="dash-screen">
+      <div className="dash-head">
+        <div>
+          <p>Selamat datang</p>
+          <strong>Dashboard Kasir</strong>
+        </div>
+        <span className="dash-avatar">PD</span>
+      </div>
+
+      <div className="dash-stats">
+        <div>
+          <b>12</b>
+          <small>Penjualan</small>
+        </div>
+        <div>
+          <b>2.4jt</b>
+          <small>Omzet</small>
+        </div>
+        <div>
+          <b>5</b>
+          <small>Titipan</small>
+        </div>
+      </div>
+
+      <p className="dash-label">Menu cepat</p>
+      <div className="dash-actions">
+        <span>Kasir</span>
+        <span>Produk</span>
+        <span>Laporan</span>
+        <span>Hotel</span>
+      </div>
+
+      <div className="dash-list">
+        <div>
+          <em>INV-0241</em>
+          <b>Rp 85rb</b>
+        </div>
+        <div>
+          <em>INV-0240</em>
+          <b>Rp 120rb</b>
+        </div>
+        <div>
+          <em>INV-0239</em>
+          <b>Rp 45rb</b>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function DeviceScreen({
   label,
   imageSrc,
   failed,
   onImageError,
+  screen,
 }: {
   label: string
   imageSrc: string
   failed: boolean
   onImageError: () => void
+  screen?: 'dashboard'
 }) {
+  if (screen === 'dashboard') {
+    return <PetshopDashboardScreen />
+  }
+
   if (imageSrc && !failed) {
     return (
       <img
@@ -54,13 +112,15 @@ function ProjectThumb({
   name,
   tone,
   demo,
+  screen,
 }: {
   name: string
   tone: string
   demo: string
+  screen?: 'dashboard'
 }) {
   const isLive = demo.startsWith('http')
-  const imageSrc = isLive ? autoPreviewUrl(demo) : ''
+  const imageSrc = isLive && !screen ? autoPreviewUrl(demo) : ''
   const [failed, setFailed] = useState(false)
   const label = name.split(' ')[0]
 
@@ -76,6 +136,7 @@ function ProjectThumb({
               imageSrc={imageSrc}
               failed={failed}
               onImageError={handleImageError}
+              screen={screen}
             />
           </div>
           <div className="device-stand" />
@@ -89,6 +150,7 @@ function ProjectThumb({
               imageSrc={imageSrc}
               failed={failed}
               onImageError={handleImageError}
+              screen={screen}
             />
           </div>
         </div>
@@ -101,6 +163,7 @@ function ProjectThumb({
               imageSrc={imageSrc}
               failed={failed}
               onImageError={handleImageError}
+              screen={screen}
             />
           </div>
         </div>
@@ -177,6 +240,7 @@ const projects = [
     tone: 'green',
     desc: 'Sistem kasir & katalog petshop untuk UMKM — login, transaksi, dan kelola produk.',
     demo: 'https://pet-shop-karsadigital.netlify.app/#/login',
+    screen: 'dashboard' as const,
   },
   {
     name: 'Warung Rasa Nusantara',
@@ -404,7 +468,12 @@ function App() {
             <div className="portfolio-grid">
               {filteredProjects.map((p) => (
                 <article key={p.name} className="glass project-card">
-                  <ProjectThumb name={p.name} tone={p.tone} demo={p.demo} />
+                  <ProjectThumb
+                    name={p.name}
+                    tone={p.tone}
+                    demo={p.demo}
+                    screen={'screen' in p ? p.screen : undefined}
+                  />
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
                     <h3>{p.name}</h3>
