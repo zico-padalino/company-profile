@@ -504,9 +504,18 @@
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
+.device-hit * {
+  pointer-events: none;
+}
+
 .device-hit:hover {
   border-color: rgba(103, 232, 249, 0.7);
   transform: translateY(-2px) scale(1.02);
+}
+
+.device-hit:focus-visible {
+  outline: 2px solid #67e8f9;
+  outline-offset: 3px;
 }
 
 .device-desktop.device-hit {
@@ -707,6 +716,11 @@
   object-fit: cover;
   object-position: top center;
   display: block;
+}
+
+.live-screen--tablet.live-screen--image img,
+.live-screen--phone.live-screen--image img {
+  object-fit: cover;
 }
 
 .project-body {

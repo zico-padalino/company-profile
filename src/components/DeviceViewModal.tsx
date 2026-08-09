@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
 import { getImagesForDevice } from '../lib/portfolioStore'
 import type { DeviceKind, PortfolioImage } from '../types/portfolio'
@@ -6,6 +6,96 @@ import { DEVICE_LABELS } from '../types/portfolio'
 import './DeviceViewModal.css'
 
 type ViewDevice = Exclude<DeviceKind, 'all'>
+
+function DeviceShell({
+  device,
+  title,
+  imageSrc,
+  liveUrl,
+}: {
+  device: ViewDevice
+  title: string
+  imageSrc?: string
+  liveUrl?: string
+}) {
+  const screenRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.4)
+  const viewport = DEVICE_VIEWPORTS[device]
+
+  useEffect(() => {
+    if (imageSrc) return
+    const el = screenRef.current
+    if (!el) return
+
+    const updateScale = () => {
+      const { width, height } = el.getBoundingClientRect()
+      if (width < 2 || height < 2) return
+      setScale(Math.min(width / viewport.width, height / viewport.height))
+    }
+
+    updateScale()
+    const observer = new ResizeObserver(updateScale)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [imageSrc, device, viewport.width, viewport.height])
+
+  const screen = (
+    <div className="device-shell-screen" ref={screenRef}>
+      {imageSrc ? (
+        <img src={imageSrc} alt={`${title} ${DEVICE_LABELS[device]}`} />
+      ) : liveUrl ? (
+        <iframe
+          src={liveUrl}
+          title={`${title} ${device}`}
+          style={{
+            width: viewport.width,
+            height: viewport.height,
+            transform: `scale(${scale})`,
+          }}
+        />
+      ) : (
+        <div className="device-view-empty">Belum ada gambar untuk {DEVICE_LABELS[device]}.</div>
+      )}
+    </div>
+  )
+
+  if (device === 'desktop') {
+    return (
+      <div className="device-shell device-shell--desktop">
+        <div className="device-shell-monitor">
+          <div className="device-shell-chrome">
+            <span />
+            <span />
+            <span />
+          </div>
+          {screen}
+        </div>
+        <div className="device-shell-neck" />
+        <div className="device-shell-base" />
+      </div>
+    )
+  }
+
+  if (device === 'tablet') {
+    return (
+      <div className="device-shell device-shell--tablet">
+        <div className="device-shell-body">
+          {screen}
+          <div className="device-shell-home" aria-hidden />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="device-shell device-shell--phone">
+      <div className="device-shell-body">
+        <div className="device-shell-notch" aria-hidden />
+        {screen}
+      </div>
+    </div>
+  )
+}
 
 export function DeviceViewModal({
   open,
@@ -24,34 +114,8 @@ export function DeviceViewModal({
   onClose: () => void
   onChangeDevice: (device: ViewDevice) => void
 }) {
-  const viewport = DEVICE_VIEWPORTS[device]
   const deviceImages = getImagesForDevice(images, device)
   const imageSrc = deviceImages[0]?.src
-  const frameRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.5)
-
-  const frameStyle = useMemo(() => {
-    if (device === 'desktop') return { aspectRatio: '16 / 10', maxWidth: 960 }
-    if (device === 'tablet') return { aspectRatio: '3 / 4', maxWidth: 420 }
-    return { aspectRatio: '9 / 19', maxWidth: 320 }
-  }, [device])
-
-  useEffect(() => {
-    if (!open || imageSrc) return
-    const el = frameRef.current
-    if (!el) return
-
-    const updateScale = () => {
-      const { width, height } = el.getBoundingClientRect()
-      if (width < 2 || height < 2) return
-      setScale(Math.min(width / viewport.width, height / viewport.height))
-    }
-
-    updateScale()
-    const observer = new ResizeObserver(updateScale)
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [open, imageSrc, device, viewport.width, viewport.height])
 
   useEffect(() => {
     if (!open) return
@@ -71,7 +135,7 @@ export function DeviceViewModal({
   return (
     <div className="device-view-overlay" onClick={onClose} role="presentation">
       <div
-        className="device-view-modal"
+        className={`device-view-modal device-view-modal--${device}`}
         role="dialog"
         aria-modal="true"
         onClick={(e) => e.stopPropagation()}
@@ -105,36 +169,16 @@ export function DeviceViewModal({
           })}
         </div>
 
-        <div className="device-view-stage">
-          <div
-            className={`device-view-frame device-view-frame--${device}`}
-            style={frameStyle}
-            ref={frameRef}
-          >
-            {imageSrc ? (
-              <img src={imageSrc} alt={`${title} ${device}`} />
-            ) : liveUrl ? (
-              <iframe
-                src={liveUrl}
-                title={`${title} ${device}`}
-                style={{
-                  width: viewport.width,
-                  height: viewport.height,
-                  transform: `scale(${scale})`,
-                }}
-              />
-            ) : (
-              <div className="device-view-empty">Belum ada gambar untuk {DEVICE_LABELS[device]}.</div>
-            )}
-          </div>
+        <div className={`device-view-stage device-view-stage--${device}`}>
+          <DeviceShell device={device} title={title} imageSrc={imageSrc} liveUrl={liveUrl} />
         </div>
 
         <p className="device-view-hint">
           {imageSrc
-            ? 'Menampilkan gambar khusus device ini.'
+            ? `Gambar ${DEVICE_LABELS[device]} ditampilkan penuh agar jelas.`
             : liveUrl
-              ? 'Menampilkan preview live dari link demo/preview.'
-              : 'Tambahkan gambar device di admin portfolio.'}
+              ? `Preview live dalam bentuk ${DEVICE_LABELS[device].toLowerCase()}.`
+              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin portfolio.`}
         </p>
       </div>
     </div>
