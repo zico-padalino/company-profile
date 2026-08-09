@@ -31,7 +31,7 @@ function LiveDeviceScreen({
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [device, viewport.width])
+  }, [device, viewport.width, viewport.height])
 
   if (!url) {
     return (
@@ -56,9 +56,14 @@ function LiveDeviceScreen({
         loading="lazy"
         tabIndex={-1}
         style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
           width: viewport.width,
           height: viewport.height,
+          border: 0,
           transform: `scale(${scale})`,
+          transformOrigin: 'top left',
         }}
       />
     </div>

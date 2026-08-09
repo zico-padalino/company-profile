@@ -1,78 +1,55 @@
-.device-view-overlay {
+/* Device View Modal — class prefix dvm- to avoid stale CSS cache */
+
+.dvm-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  background: rgba(2, 6, 14, 0.86);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.65rem;
+  padding: 0.75rem;
   box-sizing: border-box;
-  animation: device-view-fade 0.16s ease;
+  background: rgba(2, 6, 14, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-@keyframes device-view-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.device-view-modal {
-  width: min(600px, calc(100vw - 1.25rem));
-  height: min(68dvh, 560px);
-  max-height: min(68dvh, 560px);
-  overflow: hidden;
-  border-radius: 16px;
-  background: rgba(10, 16, 30, 0.98);
-  border: 1px solid rgba(148, 197, 255, 0.22);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  padding: 0.75rem 0.85rem 0.7rem;
+.dvm-modal {
   display: flex;
   flex-direction: column;
+  width: fit-content;
+  max-width: calc(100vw - 1.5rem);
+  max-height: calc(100dvh - 1.5rem);
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0a101e;
+  border: 1px solid rgba(148, 197, 255, 0.22);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+  padding: 0.75rem 0.85rem 0.65rem;
   box-sizing: border-box;
-  animation: device-view-up 0.2s ease;
 }
 
-@keyframes device-view-up {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+.dvm-modal-desktop {
+  min-width: min(600px, calc(100vw - 1.5rem));
 }
 
-.device-view-modal--tablet {
-  width: min(340px, calc(100vw - 1.25rem));
-  height: min(78dvh, 620px);
-  max-height: min(78dvh, 620px);
+.dvm-modal-tablet {
+  min-width: min(340px, calc(100vw - 1.5rem));
 }
 
-.device-view-modal--phone {
-  width: min(300px, calc(100vw - 1.25rem));
-  height: min(80dvh, 640px);
-  max-height: min(80dvh, 640px);
+.dvm-modal-phone {
+  min-width: min(280px, calc(100vw - 1.5rem));
 }
 
-.device-view-head {
+.dvm-head {
   display: flex;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.75rem;
   align-items: flex-start;
   flex-shrink: 0;
 }
 
-.device-view-head p {
+.dvm-head p {
   margin: 0;
   font-size: 0.65rem;
   letter-spacing: 0.1em;
@@ -81,15 +58,15 @@
   font-weight: 700;
 }
 
-.device-view-head h3 {
+.dvm-head h3 {
   margin: 0.15rem 0 0;
   font-family: var(--font-display);
-  font-size: clamp(0.92rem, 2vw, 1.05rem);
+  font-size: 1.05rem;
   color: #f3f7ff;
   font-weight: 700;
 }
 
-.device-view-close {
+.dvm-close {
   width: 32px;
   height: 32px;
   border-radius: 9px;
@@ -102,168 +79,121 @@
   flex-shrink: 0;
 }
 
-.device-view-close:hover {
-  background: rgba(148, 197, 255, 0.16);
-}
-
-.device-view-tabs {
+.dvm-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin: 0.55rem 0;
+  margin: 0.6rem 0;
   flex-shrink: 0;
 }
 
-.device-view-tabs button {
-  display: inline-flex;
-  align-items: center;
+.dvm-tabs button {
   border-radius: 999px;
   border: 1px solid rgba(148, 197, 255, 0.2);
   background: rgba(148, 197, 255, 0.06);
   color: #b7c7dd;
-  padding: 0.35rem 0.75rem;
+  padding: 0.35rem 0.8rem;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.device-view-tabs button.active {
+.dvm-tabs button.active {
   color: #041018;
   background: linear-gradient(135deg, #67e8f9, #60a5fa);
   border-color: transparent;
 }
 
-.device-view-stage {
-  flex: 1 1 auto;
-  min-height: 0;
+.dvm-stage {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.75rem;
   border-radius: 12px;
-  background:
-    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.08), transparent 55%),
-    #070d18;
+  background: #070d18;
   border: 1px solid rgba(148, 197, 255, 0.1);
-  padding: 0.65rem;
-  box-sizing: border-box;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.device-shell {
+.dvm-shell {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
-.device-shell-screen {
-  position: relative;
-  overflow: hidden;
-  background: #f4f7fb;
-  flex-shrink: 0;
-  border-radius: 4px;
-}
-
-.device-shell-screen iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 0;
-  display: block;
-  background: #f4f7fb;
-}
-
-.device-view-empty {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  color: #8fa4c0;
-  padding: 0.75rem;
-  text-align: center;
-  font-size: 0.8rem;
-  background: #0b1220;
-}
-
-/* Desktop chrome */
-.device-shell-monitor {
+.dvm-monitor {
   border-radius: 10px;
-  padding: 7px 8px 8px;
+  padding: 8px;
   background: linear-gradient(165deg, #3a455c 0%, #1a2233 55%, #121826 100%);
   border: 1px solid rgba(186, 210, 255, 0.35);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
   box-sizing: border-box;
 }
 
-.device-shell-chrome {
+.dvm-chrome {
   display: flex;
   gap: 5px;
   margin-bottom: 6px;
-  padding-left: 1px;
 }
 
-.device-shell-chrome span {
+.dvm-chrome span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.22);
 }
 
-.device-shell-chrome span:first-child {
+.dvm-chrome span:first-child {
   background: #f87171;
 }
 
-.device-shell-chrome span:nth-child(2) {
+.dvm-chrome span:nth-child(2) {
   background: #fbbf24;
 }
 
-.device-shell-chrome span:nth-child(3) {
+.dvm-chrome span:nth-child(3) {
   background: #34d399;
 }
 
-.device-shell--desktop .device-shell-screen {
+.dvm-shell-desktop .dvm-screen {
   border-radius: 5px;
 }
 
-/* Tablet chrome */
-.device-shell--tablet .device-shell-body {
-  border-radius: 18px;
-  padding: 10px 10px 12px;
+.dvm-body {
+  border-radius: 20px;
   background: linear-gradient(165deg, #3a455c 0%, #1a2233 55%, #121826 100%);
   border: 1px solid rgba(186, 210, 255, 0.4);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-sizing: border-box;
+  position: relative;
 }
 
-.device-shell--tablet .device-shell-screen {
+.dvm-shell-phone .dvm-body {
+  border-radius: 26px;
+  background: linear-gradient(165deg, #2f384c 0%, #151c2a 55%, #0e1420 100%);
+}
+
+.dvm-shell-tablet .dvm-screen {
   border-radius: 8px;
 }
 
-.device-shell-home {
+.dvm-shell-phone .dvm-screen {
+  border-radius: 16px;
+}
+
+.dvm-home {
   width: 28px;
   height: 4px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.28);
   margin-top: 8px;
-  flex-shrink: 0;
 }
 
-/* Phone chrome */
-.device-shell--phone .device-shell-body {
-  border-radius: 24px;
-  padding: 8px;
-  background: linear-gradient(165deg, #2f384c 0%, #151c2a 55%, #0e1420 100%);
-  border: 1px solid rgba(186, 210, 255, 0.4);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
-  position: relative;
-  box-sizing: border-box;
-}
-
-.device-shell-notch {
+.dvm-notch {
   position: absolute;
   top: 12px;
   left: 50%;
@@ -276,30 +206,40 @@
   pointer-events: none;
 }
 
-.device-shell--phone .device-shell-screen {
-  border-radius: 16px;
+.dvm-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #8fa4c0;
+  padding: 0.75rem;
+  text-align: center;
+  font-size: 0.8rem;
+  background: #0b1220;
 }
 
-.device-view-hint {
-  margin: 0.45rem 0 0;
+.dvm-hint {
+  margin: 0.5rem 0 0;
   color: #8fa4c0;
   font-size: 0.72rem;
   text-align: center;
   flex-shrink: 0;
 }
 
-@media (max-width: 720px) {
-  .device-view-overlay {
-    padding: 0.35rem;
+@media (max-width: 640px) {
+  .dvm-overlay {
     align-items: flex-end;
+    padding: 0.4rem;
   }
 
-  .device-view-modal,
-  .device-view-modal--tablet,
-  .device-view-modal--phone {
+  .dvm-modal {
     width: 100%;
-    height: min(88dvh, 680px);
-    max-height: min(88dvh, 680px);
+    max-width: 100%;
     border-radius: 14px 14px 8px 8px;
+  }
+
+  .dvm-modal-desktop .dvm-screen {
+    /* shrink desktop frame on small phones */
+    max-width: 100%;
   }
 }
