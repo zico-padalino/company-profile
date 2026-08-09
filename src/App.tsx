@@ -12,54 +12,161 @@ function autoPreviewUrl(demo: string) {
   return `https://api.microlink.io/?${params.toString()}`
 }
 
-function PetshopDashboardScreen() {
+const PETSHOP_MENUS = [
+  { title: 'Jual Barang', desc: 'Catat penjualan di kasir', tone: 'teal' },
+  { title: 'Uang Kasir', desc: 'Setor, tarik & saldo laci', tone: 'green' },
+  { title: 'Absensi', desc: 'Barcode + selfie + GPS', tone: 'blue' },
+  { title: 'Titip Hewan', desc: 'Pet hotel & penitipan', tone: 'orange' },
+  { title: 'Lihat Kamar', desc: 'Kamar hotel tersedia', tone: 'orange' },
+  { title: 'Riwayat Jual', desc: 'Lihat semua penjualan', tone: 'yellow' },
+  { title: 'Stok Barang', desc: 'Daftar produk toko', tone: 'blue' },
+  { title: 'Stok Opname', desc: 'Admin & Owner cek hasil', tone: 'blue' },
+  { title: 'Laporan Uang', desc: 'Rekap penjualan toko', tone: 'teal' },
+  { title: 'Kategori', desc: 'Kelompok produk', tone: 'yellow' },
+  { title: 'Pengguna', desc: 'Akun karyawan toko', tone: 'green' },
+  { title: 'Toko & Struk', desc: 'Nama, logo, teks struk', tone: 'teal' },
+] as const
+
+function PetshopTopbar({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="dash-screen">
-      <div className="dash-head">
-        <div>
-          <p>Selamat datang</p>
-          <strong>Dashboard Kasir</strong>
+    <div className={`ps-topbar ${compact ? 'is-compact' : ''}`}>
+      <span className="ps-burger" />
+      {!compact ? (
+        <div className="ps-brandline">
+          <strong>PetShop</strong>
+          <small>Toko & penitipan hewan</small>
         </div>
-        <span className="dash-avatar">PD</span>
+      ) : (
+        <span className="ps-role">Administrator</span>
+      )}
+      <div className="ps-user">
+        {!compact ? <span className="ps-role">Administrator</span> : null}
+        <span className="ps-avatar">A</span>
+        {!compact ? (
+          <div className="ps-user-text">
+            <b>Admin PetShop</b>
+            <small>Logout</small>
+          </div>
+        ) : null}
       </div>
+    </div>
+  )
+}
 
-      <div className="dash-stats">
-        <div>
-          <b>12</b>
-          <small>Penjualan</small>
-        </div>
-        <div>
-          <b>2.4jt</b>
-          <small>Omzet</small>
-        </div>
-        <div>
-          <b>5</b>
-          <small>Titipan</small>
-        </div>
+function PetshopHero() {
+  return (
+    <div className="ps-hero">
+      <div>
+        <p>Selamat pagi, Admin</p>
+        <strong>PetShop</strong>
+        <small>Toko & penitipan hewan</small>
       </div>
+      <div className="ps-paws" aria-hidden="true">
+        <span />
+        <span />
+      </div>
+    </div>
+  )
+}
 
-      <p className="dash-label">Menu cepat</p>
-      <div className="dash-actions">
-        <span>Kasir</span>
-        <span>Produk</span>
-        <span>Laporan</span>
-        <span>Hotel</span>
-      </div>
+function PetshopMenuGrid({ count, columns }: { count: number; columns: number }) {
+  return (
+    <div className="ps-menu-grid" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+      {PETSHOP_MENUS.slice(0, count).map((item) => (
+        <div key={item.title} className={`ps-menu-card tone-${item.tone}`}>
+          <i />
+          <b>{item.title}</b>
+          <small>{item.desc}</small>
+        </div>
+      ))}
+    </div>
+  )
+}
 
-      <div className="dash-list">
-        <div>
-          <em>INV-0241</em>
-          <b>Rp 85rb</b>
-        </div>
-        <div>
-          <em>INV-0240</em>
-          <b>Rp 120rb</b>
-        </div>
-        <div>
-          <em>INV-0239</em>
-          <b>Rp 45rb</b>
+function PetshopDashboardScreen({ device }: { device: 'desktop' | 'tablet' | 'phone' }) {
+  if (device === 'desktop') {
+    return (
+      <div className="ps-app ps-desktop">
+        <aside className="ps-sidebar">
+          <div className="ps-side-brand">
+            <span className="ps-logo" />
+            <b>PetShop Dzikra</b>
+          </div>
+          <p className="ps-side-label">Utama</p>
+          <span className="ps-side-link active">Beranda</span>
+          <p className="ps-side-label">Toko</p>
+          <span className="ps-side-link">Jual Barang</span>
+          <span className="ps-side-link">Uang Kasir</span>
+          <span className="ps-side-link">Absensi</span>
+          <span className="ps-side-link">Riwayat Jual</span>
+          <span className="ps-side-link">Titip Hewan</span>
+          <p className="ps-side-label">Barang & Laporan</p>
+          <span className="ps-side-link">Stok Barang</span>
+          <span className="ps-side-link">Stok Opname</span>
+          <span className="ps-side-link">Laporan Uang</span>
+          <p className="ps-side-label">Pengaturan</p>
+          <span className="ps-side-link">Pengguna</span>
+          <span className="ps-side-link">Toko & Struk</span>
+        </aside>
+        <div className="ps-main">
+          <PetshopTopbar />
+          <div className="ps-content">
+            <PetshopHero />
+            <p className="ps-section-title">Mau ngapain hari ini?</p>
+            <PetshopMenuGrid count={10} columns={5} />
+          </div>
         </div>
       </div>
+    )
+  }
+
+  if (device === 'tablet') {
+    return (
+      <div className="ps-app ps-tablet">
+        <PetshopTopbar />
+        <div className="ps-content">
+          <PetshopHero />
+          <p className="ps-section-title">Mau ngapain hari ini?</p>
+          <PetshopMenuGrid count={8} columns={4} />
+          <p className="ps-section-title">Ringkasan hari ini</p>
+          <div className="ps-summary">
+            <div>
+              <b>5</b>
+              <small>Penjualan</small>
+            </div>
+            <div>
+              <b>637rb</b>
+              <small>Uang masuk</small>
+            </div>
+            <div>
+              <b>3</b>
+              <small>Hewan titip</small>
+            </div>
+            <div>
+              <b>4</b>
+              <small>Reservasi</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="ps-app ps-phone">
+      <PetshopTopbar compact />
+      <div className="ps-content">
+        <PetshopHero />
+        <p className="ps-section-title">Mau ngapain hari ini?</p>
+        <PetshopMenuGrid count={6} columns={2} />
+      </div>
+      <nav className="ps-bottomnav">
+        <span className="active">Beranda</span>
+        <span>Jual</span>
+        <span>Titip</span>
+        <span>Riwayat</span>
+        <span>Stok</span>
+      </nav>
     </div>
   )
 }
@@ -70,15 +177,17 @@ function DeviceScreen({
   failed,
   onImageError,
   screen,
+  device,
 }: {
   label: string
   imageSrc: string
   failed: boolean
   onImageError: () => void
   screen?: 'dashboard'
+  device: 'desktop' | 'tablet' | 'phone'
 }) {
   if (screen === 'dashboard') {
-    return <PetshopDashboardScreen />
+    return <PetshopDashboardScreen device={device} />
   }
 
   if (imageSrc && !failed) {
@@ -137,6 +246,7 @@ function ProjectThumb({
               failed={failed}
               onImageError={handleImageError}
               screen={screen}
+              device="desktop"
             />
           </div>
           <div className="device-stand" />
@@ -151,6 +261,7 @@ function ProjectThumb({
               failed={failed}
               onImageError={handleImageError}
               screen={screen}
+              device="tablet"
             />
           </div>
         </div>
@@ -164,6 +275,7 @@ function ProjectThumb({
               failed={failed}
               onImageError={handleImageError}
               screen={screen}
+              device="phone"
             />
           </div>
         </div>
