@@ -1,6 +1,43 @@
 import { useState } from 'react'
 import './App.css'
 
+function ProjectThumb({
+  name,
+  tone,
+  demo,
+}: {
+  name: string
+  tone: string
+  demo: string
+}) {
+  const isLive = demo.startsWith('http')
+  const [previewReady, setPreviewReady] = useState(false)
+
+  return (
+    <div
+      className={`project-thumb ${isLive ? 'project-thumb--live' : ''}`}
+      data-tone={tone}
+    >
+      {!isLive || !previewReady ? (
+        <span className="project-thumb-mark">{name.split(' ')[0]}</span>
+      ) : null}
+
+      {isLive ? (
+        <div className={`project-preview ${previewReady ? 'is-ready' : ''}`}>
+          <iframe
+            src={demo}
+            title={`Preview ${name}`}
+            loading="lazy"
+            tabIndex={-1}
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            onLoad={() => setPreviewReady(true)}
+          />
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 const services = [
   {
     title: 'Website UMKM',
@@ -296,9 +333,7 @@ function App() {
             <div className="portfolio-grid">
               {filteredProjects.map((p) => (
                 <article key={p.name} className="glass project-card">
-                  <div className="project-thumb" data-tone={p.tone}>
-                    <span className="project-thumb-mark">{p.name.split(' ')[0]}</span>
-                  </div>
+                  <ProjectThumb name={p.name} tone={p.tone} demo={p.demo} />
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
                     <h3>{p.name}</h3>
