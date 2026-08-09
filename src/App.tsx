@@ -183,8 +183,9 @@ const projects = [
     category: 'Retail',
     tone: 'green',
     desc: 'Sistem kasir & katalog petshop untuk UMKM — login, transaksi, dan kelola produk.',
-    demo: 'https://pet-shop-karsadigital.netlify.app/?demo=1#/dashboard',
-    preview: 'https://pet-shop-karsadigital.netlify.app/?demo=1#/dashboard',
+    // Preview mockup: build PetShop di-host di site ini (demo=1 = auto login dashboard)
+    demo: '/demos/petshop/index.html?demo=1#/dashboard',
+    preview: '/demos/petshop/index.html?demo=1#/dashboard',
   },
   {
     name: 'Warung Rasa Nusantara',
