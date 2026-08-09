@@ -31,7 +31,7 @@ export default function AdminLogin() {
 
         {error ? <div className="admin-alert">{error}</div> : null}
 
-        <label className="admin-field">
+        <label className="admin-field" style={{ textAlign: 'left' }}>
           <span>Password Admin</span>
           <input
             type="password"
@@ -43,7 +43,7 @@ export default function AdminLogin() {
           />
         </label>
 
-        <button type="submit" className="btn btn-primary admin-full-btn">
+        <button type="submit" className="admin-btn admin-btn-primary admin-full-btn">
           Masuk Dashboard
         </button>
         <a href="/" className="admin-back-link">

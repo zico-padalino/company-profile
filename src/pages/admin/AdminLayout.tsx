@@ -10,7 +10,7 @@ export default function AdminLayout() {
 
   return (
     <div className="admin-shell admin-app">
-      <aside className="glass admin-sidebar">
+      <aside className="admin-sidebar">
         <div className="admin-brand">
           <img src="/logo-karsa.jpeg" alt="" />
           <div>
@@ -19,19 +19,21 @@ export default function AdminLayout() {
           </div>
         </div>
 
+        <p className="admin-nav-label">Menu</p>
         <nav className="admin-nav">
           <NavLink to="/admin/portfolio" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <i className="admin-nav-icon" aria-hidden="true" />
             Portfolio
           </NavLink>
         </nav>
 
         <div className="admin-sidebar-foot">
-          <a href="/" className="btn btn-ghost admin-full-btn">
+          <a href="/" className="admin-btn admin-btn-soft">
             Lihat Website
           </a>
           <button
             type="button"
-            className="btn btn-ghost admin-full-btn"
+            className="admin-btn admin-btn-danger"
             onClick={() => {
               logoutAdmin()
               window.location.href = '/admin/login'
