@@ -14,7 +14,7 @@ function LiveDeviceScreen({
   device: ViewDevice
 }) {
   const frameRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.2)
+  const [scale, setScale] = useState(0.15)
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
@@ -24,16 +24,14 @@ function LiveDeviceScreen({
     const updateScale = () => {
       const { width, height } = el.getBoundingClientRect()
       if (width < 2 || height < 2) return
-      const fitW = width / viewport.width
-      const fitH = height / viewport.height
-      setScale(device === 'desktop' ? Math.min(fitW, fitH) : Math.max(fitW, fitH))
+      setScale(Math.max(width / viewport.width, height / viewport.height))
     }
 
     updateScale()
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [device, viewport.width, viewport.height])
+  }, [device, viewport.width])
 
   if (!url) {
     return (

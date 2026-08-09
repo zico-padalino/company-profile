@@ -15,7 +15,7 @@ function DeviceShell({
   liveUrl?: string
 }) {
   const screenRef = useRef<HTMLDivElement>(null)
-  const [scale, setScale] = useState(0.35)
+  const [scale, setScale] = useState(0.3)
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
@@ -25,16 +25,20 @@ function DeviceShell({
     const updateScale = () => {
       const { width, height } = el.getBoundingClientRect()
       if (width < 2 || height < 2) return
-      const fitW = width / viewport.width
-      const fitH = height / viewport.height
-      setScale(device === 'desktop' ? Math.min(fitW, fitH) : Math.max(fitW, fitH))
+      // Cover: isi penuh layar device (tanpa area hitam kosong)
+      setScale(Math.max(width / viewport.width, height / viewport.height))
     }
 
     updateScale()
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
-    return () => observer.disconnect()
-  }, [device, viewport.width, viewport.height])
+    // Delay sekali setelah paint modal
+    const t = window.setTimeout(updateScale, 50)
+    return () => {
+      observer.disconnect()
+      window.clearTimeout(t)
+    }
+  }, [device, viewport.width, liveUrl])
 
   const screen = (
     <div className={`device-shell-screen device-shell-screen--${device}`} ref={screenRef}>
@@ -166,7 +170,7 @@ export function DeviceViewModal({
 
         <p className="device-view-hint">
           {liveUrl
-            ? `Preview live responsif · viewport ${DEVICE_VIEWPORTS[device].width}×${DEVICE_VIEWPORTS[device].height}px`
+            ? 'Preview live · klik di luar atau Esc untuk menutup'
             : 'Isi Link Demo / Preview di admin untuk menampilkan mockup live.'}
         </p>
       </div>
