@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
 import { getImagesForDevice } from '../lib/portfolioStore'
 import type { DeviceKind, PortfolioImage } from '../types/portfolio'
@@ -122,22 +123,24 @@ export function DeviceViewModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
+    const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     window.addEventListener('keydown', onKey)
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
     }
   }, [open, onClose])
 
-  if (!open) return null
+  if (!open || typeof document === 'undefined') return null
 
-  return (
+  return createPortal(
     <div className="device-view-overlay" onClick={onClose} role="presentation">
       <div
         className={`device-view-modal device-view-modal--${device}`}
         role="dialog"
         aria-modal="true"
+        aria-label={`Preview ${title} ${DEVICE_LABELS[device]}`}
         onClick={(e) => e.stopPropagation()}
       >
         <header className="device-view-head">
@@ -173,14 +176,9 @@ export function DeviceViewModal({
           <DeviceShell device={device} title={title} imageSrc={imageSrc} liveUrl={liveUrl} />
         </div>
 
-        <p className="device-view-hint">
-          {imageSrc
-            ? `Gambar ${DEVICE_LABELS[device]} ditampilkan penuh agar jelas.`
-            : liveUrl
-              ? `Preview live dalam bentuk ${DEVICE_LABELS[device].toLowerCase()}.`
-              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin portfolio.`}
-        </p>
+        <p className="device-view-hint">Klik di luar atau tekan Esc untuk menutup.</p>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

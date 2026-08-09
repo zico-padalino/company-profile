@@ -1,33 +1,56 @@
 .device-view-overlay {
   position: fixed;
   inset: 0;
-  z-index: 110;
-  background: rgba(2, 6, 14, 0.88);
-  backdrop-filter: blur(10px);
+  z-index: 10000;
+  background: rgba(2, 6, 14, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: grid;
   place-items: center;
-  padding: 0.75rem;
+  padding: 1rem;
+  animation: device-view-fade 0.18s ease;
+}
+
+@keyframes device-view-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .device-view-modal {
-  width: min(1100px, 100%);
-  max-height: min(96vh, 980px);
+  width: min(980px, 100%);
+  max-height: min(92vh, 900px);
   overflow: auto;
   border-radius: 22px;
-  background: rgba(12, 20, 36, 0.98);
-  border: 1px solid rgba(148, 197, 255, 0.2);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  padding: 1rem 1.15rem 1.15rem;
+  background: rgba(10, 16, 30, 0.98);
+  border: 1px solid rgba(148, 197, 255, 0.22);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  padding: 1.15rem 1.25rem 1.2rem;
   display: flex;
   flex-direction: column;
+  animation: device-view-up 0.22s ease;
+}
+
+@keyframes device-view-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .device-view-modal--tablet {
-  width: min(720px, 100%);
+  width: min(640px, 100%);
 }
 
 .device-view-modal--phone {
-  width: min(480px, 100%);
+  width: min(440px, 100%);
 }
 
 .device-view-head {
@@ -48,8 +71,9 @@
 
 .device-view-head h3 {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   margin-top: 0.2rem;
+  color: #f3f7ff;
 }
 
 .device-view-close {
@@ -61,13 +85,18 @@
   color: #fff;
   font-size: 1.4rem;
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.device-view-close:hover {
+  background: rgba(148, 197, 255, 0.16);
 }
 
 .device-view-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin: 0.85rem 0;
+  margin: 0.9rem 0;
   flex-shrink: 0;
 }
 
@@ -79,7 +108,7 @@
   border: 1px solid rgba(148, 197, 255, 0.2);
   background: rgba(148, 197, 255, 0.06);
   color: #b7c7dd;
-  padding: 0.45rem 0.9rem;
+  padding: 0.45rem 0.95rem;
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
@@ -106,26 +135,25 @@
 
 .device-view-stage {
   flex: 1;
-  min-height: 0;
+  min-height: 420px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.1), transparent 45%),
-    rgba(6, 12, 24, 0.9);
+    radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.12), transparent 55%),
+    #070d18;
   border: 1px solid rgba(148, 197, 255, 0.12);
-  padding: 1.25rem 1rem;
-}
-
-.device-view-stage--tablet {
-  padding: 1.5rem 1.25rem;
+  padding: 1.5rem 1rem;
 }
 
 .device-view-stage--phone {
-  padding: 1.25rem;
+  min-height: 520px;
 }
 
-/* Shared device chrome */
+.device-view-stage--tablet {
+  min-height: 520px;
+}
+
 .device-shell {
   width: 100%;
   display: flex;
@@ -138,16 +166,15 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #0b1220;
+  background: #111827;
 }
 
 .device-shell-screen img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  object-position: center top;
+  object-fit: cover;
+  object-position: top center;
   display: block;
-  background: #0b1220;
 }
 
 .device-shell-screen iframe {
@@ -170,9 +197,9 @@
   font-size: 0.9rem;
 }
 
-/* Desktop monitor */
+/* Desktop */
 .device-shell--desktop {
-  max-width: 920px;
+  max-width: 860px;
 }
 
 .device-shell-monitor {
@@ -213,7 +240,7 @@
 .device-shell--desktop .device-shell-screen {
   aspect-ratio: 16 / 10;
   border-radius: 6px;
-  max-height: min(58vh, 560px);
+  max-height: min(52vh, 520px);
 }
 
 .device-shell-neck {
@@ -234,15 +261,15 @@
 
 /* Tablet */
 .device-shell--tablet {
-  max-width: min(460px, 92%);
+  max-width: min(420px, 88%);
 }
 
 .device-shell--tablet .device-shell-body {
   width: 100%;
   aspect-ratio: 3 / 4;
-  max-height: min(68vh, 640px);
+  max-height: min(64vh, 620px);
   border-radius: 28px;
-  padding: 14px 14px 22px;
+  padding: 14px 14px 20px;
   background: linear-gradient(165deg, #3a455c 0%, #1a2233 55%, #121826 100%);
   border: 1px solid rgba(186, 210, 255, 0.4);
   box-shadow:
@@ -250,14 +277,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  position: relative;
 }
 
 .device-shell--tablet .device-shell-screen {
   flex: 1;
   min-height: 0;
   border-radius: 12px;
-  background: #111827;
 }
 
 .device-shell-home {
@@ -271,13 +296,13 @@
 
 /* Phone */
 .device-shell--phone {
-  max-width: min(300px, 78%);
+  max-width: min(280px, 72%);
 }
 
 .device-shell--phone .device-shell-body {
   width: 100%;
   aspect-ratio: 9 / 19;
-  max-height: min(70vh, 680px);
+  max-height: min(68vh, 680px);
   border-radius: 36px;
   padding: 10px;
   background: linear-gradient(165deg, #3a455c 0%, #1a2233 55%, #121826 100%);
@@ -303,7 +328,6 @@
 .device-shell--phone .device-shell-screen {
   height: 100%;
   border-radius: 26px;
-  background: #111827;
 }
 
 .device-view-hint {
@@ -315,24 +339,33 @@
 }
 
 @media (max-width: 720px) {
+  .device-view-overlay {
+    padding: 0.65rem;
+    align-items: flex-end;
+  }
+
   .device-view-modal {
-    max-height: 96vh;
-    padding: 0.85rem;
+    width: 100%;
+    max-height: 94vh;
+    border-radius: 18px 18px 12px 12px;
   }
 
-  .device-shell--tablet {
-    max-width: min(360px, 94%);
-  }
-
-  .device-shell--tablet .device-shell-body {
-    max-height: min(62vh, 540px);
+  .device-view-stage,
+  .device-view-stage--phone,
+  .device-view-stage--tablet {
+    min-height: 360px;
+    padding: 1rem 0.75rem;
   }
 
   .device-shell--phone {
-    max-width: min(260px, 82%);
+    max-width: min(250px, 78%);
+  }
+
+  .device-shell--tablet {
+    max-width: min(340px, 90%);
   }
 
   .device-shell--desktop .device-shell-screen {
-    max-height: min(42vh, 360px);
+    max-height: min(38vh, 320px);
   }
 }
