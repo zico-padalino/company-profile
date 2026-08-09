@@ -181,18 +181,9 @@
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.device-shell-screen--desktop img {
   object-fit: contain;
   object-position: top center;
   background: #f4f7fb;
-}
-
-.device-shell-screen--tablet img,
-.device-shell-screen--phone img {
-  object-fit: cover;
-  object-position: top center;
 }
 
 .device-shell-screen iframe {

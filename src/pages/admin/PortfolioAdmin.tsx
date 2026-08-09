@@ -3,7 +3,6 @@ import { usePortfolio } from '../../hooks/usePortfolio'
 import {
   fileToCompressedDataUrl,
   isDirectImageUrl,
-  resolveImageSource,
 } from '../../lib/imageUpload'
 import {
   deletePortfolioItem,
@@ -14,13 +13,11 @@ import {
   upsertPortfolioItem,
 } from '../../lib/portfolioStore'
 import type {
-  DeviceKind,
   PortfolioFormData,
   PortfolioImage,
   PortfolioItem,
   PortfolioTone,
 } from '../../types/portfolio'
-import { DEVICE_LABELS } from '../../types/portfolio'
 import './admin.css'
 
 const EMPTY_FORM: PortfolioFormData = {
@@ -35,8 +32,6 @@ const EMPTY_FORM: PortfolioFormData = {
   published: true,
 }
 
-const DEVICE_OPTIONS: DeviceKind[] = ['desktop', 'tablet', 'phone', 'all']
-
 export default function PortfolioAdmin() {
   const items = usePortfolio(true)
   const [form, setForm] = useState<PortfolioFormData>(EMPTY_FORM)
@@ -44,7 +39,6 @@ export default function PortfolioAdmin() {
   const [message, setMessage] = useState('')
   const [query, setQuery] = useState('')
   const [imageUrl, setImageUrl] = useState('')
-  const [imageDevice, setImageDevice] = useState<DeviceKind>('desktop')
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
@@ -96,10 +90,10 @@ export default function PortfolioAdmin() {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  function addImage(src: string, device: DeviceKind = imageDevice) {
+  function addImage(src: string) {
     const next = src.trim()
     if (!next) return
-    const image: PortfolioImage = { src: next, device }
+    const image: PortfolioImage = { src: next, device: 'all' }
     setForm((f) => ({ ...f, images: [...(f.images || []), image] }))
   }
 
@@ -107,13 +101,6 @@ export default function PortfolioAdmin() {
     setForm((f) => ({
       ...f,
       images: (f.images || []).filter((_, i) => i !== index),
-    }))
-  }
-
-  function setImageDeviceAt(index: number, device: DeviceKind) {
-    setForm((f) => ({
-      ...f,
-      images: (f.images || []).map((img, i) => (i === index ? { ...img, device } : img)),
     }))
   }
 
@@ -125,11 +112,11 @@ export default function PortfolioAdmin() {
       for (const file of Array.from(files)) {
         uploaded.push({
           src: await fileToCompressedDataUrl(file),
-          device: imageDevice,
+          device: 'all',
         })
       }
       setForm((f) => ({ ...f, images: [...(f.images || []), ...uploaded] }))
-      showMessage(`${uploaded.length} gambar ${DEVICE_LABELS[imageDevice]} ditambahkan.`)
+      showMessage(`${uploaded.length} gambar ditambahkan ke galeri detail.`)
     } catch {
       showMessage('Gagal upload gambar. Pastikan file berupa image.')
     } finally {
@@ -137,57 +124,19 @@ export default function PortfolioAdmin() {
     }
   }
 
-  async function handleAddFromLink(rawUrl?: string, device: DeviceKind = imageDevice) {
-    const source = (rawUrl ?? imageUrl).trim()
+  async function handleAddImageUrl() {
+    const source = imageUrl.trim()
     if (!source) {
-      showMessage('Isi link website atau URL gambar dulu.')
+      showMessage('Isi URL gambar dulu.')
       return
     }
-    setUploading(true)
-    try {
-      const resolved = await resolveImageSource(source, device)
-      addImage(resolved, device)
-      setImageUrl('')
-      showMessage(
-        isDirectImageUrl(source)
-          ? `URL gambar (${DEVICE_LABELS[device]}) ditambahkan.`
-          : `Screenshot ${DEVICE_LABELS[device]} ditambahkan.`,
-      )
-    } catch {
-      showMessage('Gagal mengambil gambar dari link.')
-    } finally {
-      setUploading(false)
-    }
-  }
-
-  async function handleCaptureFromDemo(allDevices = false) {
-    const source = (form.preview || form.demo || '').trim()
-    if (!source || source.startsWith('#')) {
-      showMessage('Isi Link Demo / Preview dulu untuk ambil gambar website.')
+    if (!isDirectImageUrl(source) && !source.startsWith('data:image/')) {
+      showMessage('Gunakan URL file gambar (.png/.jpg/.webp), bukan link website.')
       return
     }
-    if (!allDevices) {
-      await handleAddFromLink(source, imageDevice)
-      return
-    }
-
-    setUploading(true)
-    try {
-      const devices: Exclude<DeviceKind, 'all'>[] = ['desktop', 'tablet', 'phone']
-      const uploaded: PortfolioImage[] = []
-      for (const device of devices) {
-        uploaded.push({
-          src: await resolveImageSource(source, device),
-          device,
-        })
-      }
-      setForm((f) => ({ ...f, images: [...(f.images || []), ...uploaded] }))
-      showMessage('Screenshot Desktop, Tablet, dan HP ditambahkan.')
-    } catch {
-      showMessage('Gagal mengambil screenshot dari link demo.')
-    } finally {
-      setUploading(false)
-    }
+    addImage(source)
+    setImageUrl('')
+    showMessage('URL gambar ditambahkan ke galeri detail.')
   }
 
   function handleSubmit(e: FormEvent) {
@@ -348,23 +297,9 @@ export default function PortfolioAdmin() {
             <div className="admin-form-section">
               <h3>Galeri Gambar Detail</h3>
               <em className="admin-section-hint">
-                Upload / ambil screenshot per device (Desktop, Tablet, HP). Gambar device akan
-                tampil saat mockup diklik di website.
+                Opsional untuk modal “Detail”. Mockup Desktop/Tablet/HP memakai preview live dari
+                Link Demo — tanpa screenshot.
               </em>
-
-              <label className="admin-field">
-                <span>Target device untuk gambar baru</span>
-                <select
-                  value={imageDevice}
-                  onChange={(e) => setImageDevice(e.target.value as DeviceKind)}
-                >
-                  {DEVICE_OPTIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {DEVICE_LABELS[d]}
-                    </option>
-                  ))}
-                </select>
-              </label>
 
               <div className="admin-image-actions">
                 <button
@@ -373,23 +308,7 @@ export default function PortfolioAdmin() {
                   disabled={uploading}
                   onClick={() => imageInputRef.current?.click()}
                 >
-                  {uploading ? 'Memproses...' : '1. Upload Gambar'}
-                </button>
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-soft"
-                  disabled={uploading}
-                  onClick={() => void handleCaptureFromDemo(false)}
-                >
-                  Ambil dari Link Demo
-                </button>
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-soft"
-                  disabled={uploading}
-                  onClick={() => void handleCaptureFromDemo(true)}
-                >
-                  Ambil 3 Ukuran
+                  {uploading ? 'Memproses...' : 'Upload Gambar'}
                 </button>
                 <input
                   ref={imageInputRef}
@@ -406,15 +325,13 @@ export default function PortfolioAdmin() {
 
               <div className="admin-row-2">
                 <label className="admin-field">
-                  <span>2. Link website / URL gambar</span>
+                  <span>URL file gambar</span>
                   <input
                     value={imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://pet-shop-karsadigital.netlify.app/ atau https://.../foto.png"
+                    placeholder="https://.../foto.png"
                   />
-                  <em>
-                    Website → screenshot sesuai device terpilih. File gambar → dipakai langsung.
-                  </em>
+                  <em>Hanya URL file gambar (.png/.jpg/.webp), bukan link website.</em>
                 </label>
                 <div className="admin-field" style={{ justifyContent: 'end' }}>
                   <span>&nbsp;</span>
@@ -422,7 +339,7 @@ export default function PortfolioAdmin() {
                     type="button"
                     className="admin-btn admin-btn-primary"
                     disabled={uploading}
-                    onClick={() => void handleAddFromLink()}
+                    onClick={() => void handleAddImageUrl()}
                   >
                     Tambahkan
                   </button>
@@ -433,22 +350,10 @@ export default function PortfolioAdmin() {
                 <div className="admin-image-grid">
                   {formImages.map((img, index) => (
                     <div
-                      key={`${index}-${img.device}-${img.src.slice(0, 24)}`}
+                      key={`${index}-${img.src.slice(0, 24)}`}
                       className="admin-image-card"
                     >
-                      <img src={img.src} alt={`Preview ${DEVICE_LABELS[img.device]}`} />
-                      <select
-                        className="admin-image-device"
-                        value={img.device}
-                        onChange={(e) => setImageDeviceAt(index, e.target.value as DeviceKind)}
-                        aria-label="Device gambar"
-                      >
-                        {DEVICE_OPTIONS.map((d) => (
-                          <option key={d} value={d}>
-                            {DEVICE_LABELS[d]}
-                          </option>
-                        ))}
-                      </select>
+                      <img src={img.src} alt={`Galeri ${index + 1}`} />
                       <button type="button" onClick={() => removeImage(index)}>
                         Hapus
                       </button>
@@ -480,7 +385,7 @@ export default function PortfolioAdmin() {
                   onChange={(e) => setForm((f) => ({ ...f, preview: e.target.value }))}
                   placeholder="Kosongkan jika sama dengan link demo"
                 />
-                <em>URL yang ditampilkan di dalam mockup HP/tablet/desktop.</em>
+                <em>URL yang ditampilkan live di mockup HP/tablet/desktop (iframe, tanpa screenshot).</em>
               </label>
 
               <div className="admin-row-2">

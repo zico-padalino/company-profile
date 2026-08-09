@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
-import { getExactImagesForDevice } from '../lib/portfolioStore'
-import type { PortfolioImage } from '../types/portfolio'
 import { DEVICE_LABELS } from '../types/portfolio'
 import type { ViewDevice } from './ProjectThumb'
 import './DeviceViewModal.css'
@@ -10,12 +8,10 @@ import './DeviceViewModal.css'
 function DeviceShell({
   device,
   title,
-  imageSrc,
   liveUrl,
 }: {
   device: ViewDevice
   title: string
-  imageSrc?: string
   liveUrl?: string
 }) {
   const screenRef = useRef<HTMLDivElement>(null)
@@ -23,7 +19,6 @@ function DeviceShell({
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
-    if (imageSrc) return
     const el = screenRef.current
     if (!el) return
 
@@ -32,8 +27,6 @@ function DeviceShell({
       if (width < 2 || height < 2) return
       const fitW = width / viewport.width
       const fitH = height / viewport.height
-      // Phone/tablet: cover agar layout mobile mengisi layar (tanpa celah)
-      // Desktop: contain agar UI penuh terlihat
       setScale(device === 'desktop' ? Math.min(fitW, fitH) : Math.max(fitW, fitH))
     }
 
@@ -41,13 +34,11 @@ function DeviceShell({
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [imageSrc, device, viewport.width, viewport.height])
+  }, [device, viewport.width, viewport.height])
 
   const screen = (
     <div className={`device-shell-screen device-shell-screen--${device}`} ref={screenRef}>
-      {imageSrc ? (
-        <img src={imageSrc} alt={`${title} ${DEVICE_LABELS[device]}`} />
-      ) : liveUrl ? (
+      {liveUrl ? (
         <iframe
           key={`${device}-${liveUrl}`}
           src={liveUrl}
@@ -59,7 +50,9 @@ function DeviceShell({
           }}
         />
       ) : (
-        <div className="device-view-empty">Belum ada gambar untuk {DEVICE_LABELS[device]}.</div>
+        <div className="device-view-empty">
+          Isi Link Demo / Preview di admin agar mockup {DEVICE_LABELS[device]} tampil live.
+        </div>
       )}
     </div>
   )
@@ -105,7 +98,6 @@ export function DeviceViewModal({
   device,
   title,
   liveUrl,
-  images,
   onClose,
   onChangeDevice,
 }: {
@@ -113,16 +105,9 @@ export function DeviceViewModal({
   device: ViewDevice
   title: string
   liveUrl?: string
-  images?: PortfolioImage[]
   onClose: () => void
   onChangeDevice: (device: ViewDevice) => void
 }) {
-  // Hanya pakai gambar yang benar-benar untuk device ini.
-  // Kalau belum ada, pakai live preview (iframe viewport HP/tablet) agar layout responsif.
-  const exactImage = getExactImagesForDevice(images, device)[0]?.src
-  const imageSrc = exactImage
-  const showLive = !imageSrc && Boolean(liveUrl)
-
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -161,40 +146,28 @@ export function DeviceViewModal({
         </header>
 
         <div className="device-view-tabs" role="tablist" aria-label="Pilih device">
-          {(['desktop', 'tablet', 'phone'] as ViewDevice[]).map((d) => {
-            const hasExact = getExactImagesForDevice(images, d).length > 0
-            return (
-              <button
-                key={d}
-                type="button"
-                role="tab"
-                aria-selected={d === device}
-                className={d === device ? 'active' : ''}
-                onClick={() => onChangeDevice(d)}
-              >
-                {DEVICE_LABELS[d]}
-                {hasExact ? <em className="device-tab-dot" aria-hidden /> : null}
-              </button>
-            )
-          })}
+          {(['desktop', 'tablet', 'phone'] as ViewDevice[]).map((d) => (
+            <button
+              key={d}
+              type="button"
+              role="tab"
+              aria-selected={d === device}
+              className={d === device ? 'active' : ''}
+              onClick={() => onChangeDevice(d)}
+            >
+              {DEVICE_LABELS[d]}
+            </button>
+          ))}
         </div>
 
         <div className={`device-view-stage device-view-stage--${device}`}>
-          <DeviceShell
-            key={device}
-            device={device}
-            title={title}
-            imageSrc={imageSrc}
-            liveUrl={liveUrl}
-          />
+          <DeviceShell key={device} device={device} title={title} liveUrl={liveUrl} />
         </div>
 
         <p className="device-view-hint">
-          {imageSrc
-            ? `Gambar khusus ${DEVICE_LABELS[device]}.`
-            : showLive
-              ? `Preview live responsif (${DEVICE_VIEWPORTS[device].width}px) untuk ${DEVICE_LABELS[device]}.`
-              : `Tambahkan gambar ${DEVICE_LABELS[device]} di admin, atau isi link demo.`}
+          {liveUrl
+            ? `Preview live responsif · viewport ${DEVICE_VIEWPORTS[device].width}×${DEVICE_VIEWPORTS[device].height}px`
+            : 'Isi Link Demo / Preview di admin untuk menampilkan mockup live.'}
         </p>
       </div>
     </div>,

@@ -270,7 +270,6 @@ export default function HomePage() {
                     tone={p.tone}
                     demo={p.demo}
                     preview={p.preview}
-                    images={p.images}
                     onOpenDevice={(device) => setDevicePreview({ item: p, device })}
                   />
                   <div className="project-body">
@@ -325,7 +324,6 @@ export default function HomePage() {
               ? devicePreview.item.demo
               : undefined)
           }
-          images={devicePreview?.item.images}
           onClose={() => setDevicePreview(null)}
           onChangeDevice={(device) =>
             setDevicePreview((prev) => (prev ? { ...prev, device } : prev))

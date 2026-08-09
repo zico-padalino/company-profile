@@ -1,18 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { DEVICE_VIEWPORTS } from '../lib/imageUpload'
-import { getExactImagesForDevice } from '../lib/portfolioStore'
-import type { DeviceKind, PortfolioImage } from '../types/portfolio'
+import type { DeviceKind } from '../types/portfolio'
 
 export type ViewDevice = Exclude<DeviceKind, 'all'>
 
 function LiveDeviceScreen({
   url,
-  imageSrc,
   label,
   device,
 }: {
   url: string
-  imageSrc?: string
   label: string
   device: ViewDevice
 }) {
@@ -21,7 +18,6 @@ function LiveDeviceScreen({
   const viewport = DEVICE_VIEWPORTS[device]
 
   useEffect(() => {
-    if (imageSrc) return
     const el = frameRef.current
     if (!el) return
 
@@ -37,15 +33,7 @@ function LiveDeviceScreen({
     const observer = new ResizeObserver(updateScale)
     observer.observe(el)
     return () => observer.disconnect()
-  }, [imageSrc, viewport.width, viewport.height])
-
-  if (imageSrc) {
-    return (
-      <div className={`live-screen live-screen--${device} live-screen--image`}>
-        <img src={imageSrc} alt={`${label} ${device}`} />
-      </div>
-    )
-  }
+  }, [device, viewport.width, viewport.height])
 
   if (!url) {
     return (
@@ -84,24 +72,17 @@ export function ProjectThumb({
   tone,
   demo,
   preview,
-  images,
   onOpenDevice,
 }: {
   name: string
   tone: string
   demo: string
   preview?: string
-  images?: PortfolioImage[]
   onOpenDevice: (device: ViewDevice) => void
 }) {
   const liveUrl =
     preview || (demo.startsWith('http') || demo.startsWith('/') ? demo : '')
   const label = name.split(' ')[0]
-
-  // Hanya gambar exact device — jangan pakai screenshot desktop di frame HP
-  const desktopImage = getExactImagesForDevice(images, 'desktop')[0]?.src
-  const tabletImage = getExactImagesForDevice(images, 'tablet')[0]?.src
-  const phoneImage = getExactImagesForDevice(images, 'phone')[0]?.src
 
   return (
     <div className="project-thumb project-thumb--devices" data-tone={tone}>
@@ -118,12 +99,7 @@ export function ProjectThumb({
             <span />
           </div>
           <div className="device-bezel">
-            <LiveDeviceScreen
-              url={liveUrl}
-              imageSrc={desktopImage}
-              label={label}
-              device="desktop"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="desktop" />
           </div>
           <div className="device-stand" />
           <div className="device-base" />
@@ -136,12 +112,7 @@ export function ProjectThumb({
           aria-label="Lihat mockup tablet"
         >
           <div className="device-bezel">
-            <LiveDeviceScreen
-              url={liveUrl}
-              imageSrc={tabletImage}
-              label={label}
-              device="tablet"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="tablet" />
           </div>
         </button>
 
@@ -153,12 +124,7 @@ export function ProjectThumb({
         >
           <div className="device-bezel phone-bezel">
             <div className="phone-notch" />
-            <LiveDeviceScreen
-              url={liveUrl}
-              imageSrc={phoneImage}
-              label={label}
-              device="phone"
-            />
+            <LiveDeviceScreen url={liveUrl} label={label} device="phone" />
           </div>
         </button>
       </div>
