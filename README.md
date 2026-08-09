@@ -35,5 +35,17 @@ npm run preview
 ## Customisasi cepat
 
 - Logo: `public/logo-karsa.jpeg`
-- Nomor WhatsApp & email: edit di `src/App.tsx` bagian kontak
-- Link demo project: ganti field `demo` pada array `projects`
+- Nomor WhatsApp & email: edit di `src/pages/HomePage.tsx` bagian kontak
+- Portfolio/demo: kelola lewat backend `/admin`
+
+## Backend Admin (Portfolio)
+
+1. Buka `/admin` atau `/admin/login`
+2. Password default: `karsa2026` (bisa diganti lewat `VITE_ADMIN_PASSWORD` di `.env`)
+3. Di menu **Portfolio** Anda bisa:
+   - Tambah / edit / hapus project
+   - Atur nama, kategori, deskripsi, link demo, link preview mockup
+   - Publish / draft
+   - Export & import JSON
+
+Data portfolio disimpan di `localStorage` browser (cocok untuk Netlify static).
