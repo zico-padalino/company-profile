@@ -12,6 +12,44 @@ function autoPreviewUrl(demo: string) {
   return `https://api.microlink.io/?${params.toString()}`
 }
 
+function DeviceScreen({
+  label,
+  imageSrc,
+  failed,
+  onImageError,
+}: {
+  label: string
+  imageSrc: string
+  failed: boolean
+  onImageError: () => void
+}) {
+  if (imageSrc && !failed) {
+    return (
+      <img
+        src={imageSrc}
+        alt=""
+        loading="lazy"
+        referrerPolicy="no-referrer"
+        className="device-screen-img"
+        onError={onImageError}
+      />
+    )
+  }
+
+  return (
+    <div className="device-screen-fallback">
+      <strong>{label}</strong>
+      <div className="device-bar" />
+      <div className="device-bar short" />
+      <div className="device-cards">
+        <span />
+        <span />
+        <span />
+      </div>
+    </div>
+  )
+}
+
 function ProjectThumb({
   name,
   tone,
@@ -24,38 +62,49 @@ function ProjectThumb({
   const isLive = demo.startsWith('http')
   const imageSrc = isLive ? autoPreviewUrl(demo) : ''
   const [failed, setFailed] = useState(false)
-  const showImage = Boolean(imageSrc && !failed)
+  const label = name.split(' ')[0]
+
+  const handleImageError = () => setFailed(true)
 
   return (
-    <div
-      className={`project-thumb ${showImage || isLive ? 'project-thumb--media' : ''}`}
-      data-tone={tone}
-    >
-      {showImage ? (
-        <img
-          className="project-cover"
-          src={imageSrc}
-          alt={`Tampilan ${name}`}
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={() => setFailed(true)}
-        />
-      ) : isLive ? (
-        <div className="project-mockui" aria-hidden="true">
-          <div className="mock-phone">
-            <div className="mock-notch" />
-            <div className="mock-screen">
-              <strong>{name.split(' ')[0]}</strong>
-              <span>E-POS Mobile</span>
-              <div className="mock-field" />
-              <div className="mock-field" />
-              <div className="mock-btn" />
-            </div>
+    <div className="project-thumb project-thumb--devices" data-tone={tone}>
+      <div className="device-stage" aria-hidden="true">
+        <div className="device device-desktop">
+          <div className="device-bezel">
+            <DeviceScreen
+              label={label}
+              imageSrc={imageSrc}
+              failed={failed}
+              onImageError={handleImageError}
+            />
+          </div>
+          <div className="device-stand" />
+          <div className="device-base" />
+        </div>
+
+        <div className="device device-tablet">
+          <div className="device-bezel">
+            <DeviceScreen
+              label={label}
+              imageSrc={imageSrc}
+              failed={failed}
+              onImageError={handleImageError}
+            />
           </div>
         </div>
-      ) : (
-        <span className="project-thumb-mark">{name.split(' ')[0]}</span>
-      )}
+
+        <div className="device device-phone">
+          <div className="device-bezel phone-bezel">
+            <div className="phone-notch" />
+            <DeviceScreen
+              label={label}
+              imageSrc={imageSrc}
+              failed={failed}
+              onImageError={handleImageError}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
