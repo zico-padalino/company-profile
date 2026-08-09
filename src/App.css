@@ -482,30 +482,90 @@
   z-index: 1;
 }
 
-.project-thumb--live {
-  background: #0a1020;
+.project-thumb--media {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(23, 162, 184, 0.35), transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.2), transparent 45%),
+    linear-gradient(160deg, #0b1524, #102033 55%, #0a1220);
 }
 
-.project-preview {
+.project-cover {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  z-index: 1;
 }
 
-.project-preview.is-ready {
-  opacity: 1;
+.project-mockui {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
 }
 
-.project-preview iframe {
-  border: 0;
-  width: 400%;
-  height: 400%;
-  transform: scale(0.25);
-  transform-origin: top left;
-  pointer-events: none;
-  background: #0a1020;
+.mock-phone {
+  width: 42%;
+  max-width: 140px;
+  aspect-ratio: 9 / 17;
+  border-radius: 18px;
+  padding: 8px 7px 10px;
+  background: linear-gradient(180deg, #1c2738, #121a28);
+  border: 1px solid rgba(148, 197, 255, 0.28);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.mock-notch {
+  width: 38%;
+  height: 7px;
+  border-radius: 999px;
+  background: #0a101a;
+  margin: 0 auto 8px;
+}
+
+.mock-screen {
+  height: calc(100% - 15px);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #e8f7fa, #ffffff 40%, #f3fbfd);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  color: #0f2a33;
+}
+
+.mock-screen strong {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.mock-screen span {
+  font-size: 0.58rem;
+  color: #5b7c86;
+  margin-bottom: 4px;
+}
+
+.mock-field {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: #d7e8ed;
+}
+
+.mock-btn {
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  margin-top: 2px;
+  background: linear-gradient(90deg, #17a2b8, #38bdf8);
 }
 
 .project-body {

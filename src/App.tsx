@@ -1,6 +1,17 @@
 import { useState } from 'react'
 import './App.css'
 
+function autoPreviewUrl(demo: string) {
+  // Preview otomatis dari URL live — tidak perlu screenshot manual
+  const params = new URLSearchParams({
+    url: demo,
+    screenshot: 'true',
+    meta: 'false',
+    embed: 'screenshot.url',
+  })
+  return `https://api.microlink.io/?${params.toString()}`
+}
+
 function ProjectThumb({
   name,
   tone,
@@ -11,29 +22,40 @@ function ProjectThumb({
   demo: string
 }) {
   const isLive = demo.startsWith('http')
-  const [previewReady, setPreviewReady] = useState(false)
+  const imageSrc = isLive ? autoPreviewUrl(demo) : ''
+  const [failed, setFailed] = useState(false)
+  const showImage = Boolean(imageSrc && !failed)
 
   return (
     <div
-      className={`project-thumb ${isLive ? 'project-thumb--live' : ''}`}
+      className={`project-thumb ${showImage || isLive ? 'project-thumb--media' : ''}`}
       data-tone={tone}
     >
-      {!isLive || !previewReady ? (
-        <span className="project-thumb-mark">{name.split(' ')[0]}</span>
-      ) : null}
-
-      {isLive ? (
-        <div className={`project-preview ${previewReady ? 'is-ready' : ''}`}>
-          <iframe
-            src={demo}
-            title={`Preview ${name}`}
-            loading="lazy"
-            tabIndex={-1}
-            sandbox="allow-scripts allow-same-origin allow-forms"
-            onLoad={() => setPreviewReady(true)}
-          />
+      {showImage ? (
+        <img
+          className="project-cover"
+          src={imageSrc}
+          alt={`Tampilan ${name}`}
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={() => setFailed(true)}
+        />
+      ) : isLive ? (
+        <div className="project-mockui" aria-hidden="true">
+          <div className="mock-phone">
+            <div className="mock-notch" />
+            <div className="mock-screen">
+              <strong>{name.split(' ')[0]}</strong>
+              <span>E-POS Mobile</span>
+              <div className="mock-field" />
+              <div className="mock-field" />
+              <div className="mock-btn" />
+            </div>
+          </div>
         </div>
-      ) : null}
+      ) : (
+        <span className="project-thumb-mark">{name.split(' ')[0]}</span>
+      )}
     </div>
   )
 }
