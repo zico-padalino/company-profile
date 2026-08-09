@@ -206,9 +206,14 @@ export default function PortfolioAdmin() {
                   rows={3}
                   value={form.desc}
                   onChange={(e) => setForm((f) => ({ ...f, desc: e.target.value }))}
-                  placeholder="Ringkasan singkat project untuk card portfolio"
+                  placeholder="Maksimal 1–2 kalimat. Jangan tempel Markdown panjang di sini."
                   required
+                  maxLength={280}
                 />
+                <em>
+                  Untuk card depan saja ({form.desc.length}/280). Teks panjang & Markdown taruh di
+                  Deskripsi Lengkap.
+                </em>
               </label>
 
               <label className="admin-field">
@@ -217,7 +222,7 @@ export default function PortfolioAdmin() {
                   rows={10}
                   value={form.detail || ''}
                   onChange={(e) => setForm((f) => ({ ...f, detail: e.target.value }))}
-                  placeholder="Bisa pakai Markdown: ## Judul, - list, **tebal**"
+                  placeholder="Tempel deskripsi lengkap di sini (boleh Markdown: ## Judul, - list, **tebal**)"
                 />
                 <em>Ditampilkan saat pengunjung klik tombol “Detail” di portfolio.</em>
               </label>

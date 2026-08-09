@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { PortfolioDetailModal } from '../components/PortfolioDetailModal'
 import { ProjectThumb } from '../components/ProjectThumb'
 import { usePortfolio } from '../hooks/usePortfolio'
+import { getCardSummary } from '../lib/portfolioText'
 import type { PortfolioItem } from '../types/portfolio'
 import '../App.css'
 
@@ -266,7 +267,7 @@ export default function HomePage() {
                   <div className="project-body">
                     <span className="project-cat">{p.category}</span>
                     <h3>{p.name}</h3>
-                    <p>{p.desc}</p>
+                    <p className="project-desc">{getCardSummary(p.desc, p.detail)}</p>
                     <div className="project-actions">
                       <button
                         type="button"

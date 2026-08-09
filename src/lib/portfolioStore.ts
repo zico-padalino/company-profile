@@ -1,5 +1,6 @@
 import { DEFAULT_CATEGORIES, DEFAULT_PORTFOLIO } from '../data/defaultPortfolio'
 import type { PortfolioFormData, PortfolioItem } from '../types/portfolio'
+import { healPortfolioCopy, looksLikeFullMarkdown } from './portfolioText'
 
 const STORAGE_KEY = 'karsa_portfolio_v2'
 const AUTH_KEY = 'karsa_admin_session'
@@ -39,26 +40,40 @@ function readRaw(): PortfolioItem[] | null {
 function withDefaultDetails(items: PortfolioItem[]): PortfolioItem[] {
   return items.map((item) => {
     const fallback = DEFAULT_PORTFOLIO.find((d) => d.id === item.id)
-    if (!fallback) return item
+    const healed = healPortfolioCopy(item)
     return {
       ...item,
-      detail: item.detail?.trim() ? item.detail : fallback.detail,
-      // Sinkronkan deskripsi PetShop lama ke versi terbaru jika belum punya detail
-      desc:
-        item.id === 'petshop-epos' && !item.detail?.trim()
-          ? fallback.desc
-          : item.desc,
-      name:
-        item.id === 'petshop-epos' && item.name.includes('PetShop')
-          ? fallback.name
-          : item.name,
+      ...healed,
+      detail: healed.detail?.trim()
+        ? healed.detail
+        : fallback?.detail || item.detail,
+      desc: healed.desc || fallback?.desc || item.desc,
+      name: healed.name || item.name,
     }
   })
 }
 
+let didPersistHeal = false
+
 export function getPortfolioItems(includeDraft = false): PortfolioItem[] {
-  const items = withDefaultDetails(readRaw() ?? DEFAULT_PORTFOLIO)
+  const raw = readRaw()
+  const items = withDefaultDetails(raw ?? DEFAULT_PORTFOLIO)
   const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder)
+
+  // Perbaiki data lama di localStorage (markdown panjang di field deskripsi singkat)
+  if (raw && !didPersistHeal) {
+    const needsHeal = raw.some(
+      (item) =>
+        looksLikeFullMarkdown(item.desc) ||
+        ((item.id === 'petshop-epos' || /pet\s*shop/i.test(item.name)) &&
+          item.desc.length > 220),
+    )
+    if (needsHeal) {
+      didPersistHeal = true
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sorted))
+    }
+  }
+
   return includeDraft ? sorted : sorted.filter((i) => i.published)
 }
 
